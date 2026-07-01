@@ -1,7 +1,7 @@
 import { secureStorage, SecureKeys } from './secureStorage';
+import { API_BASE_URL } from '@/src/config/api';
 
-// Set EXPO_PUBLIC_API_URL in your .env (e.g. http://192.168.x.x:4000 for local dev)
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+const BASE_URL = API_BASE_URL;
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 

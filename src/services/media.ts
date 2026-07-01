@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
+import { API_BASE_URL } from '@/src/config/api';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+const BASE_URL = API_BASE_URL;
 
 export interface UploadResult {
   url: string;

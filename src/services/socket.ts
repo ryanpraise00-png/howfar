@@ -3,8 +3,9 @@ import { AppState, AppStateStatus } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useChatStore } from '@/src/store/chatStore';
 import { useStatusStore } from '@/src/store/statusStore';
+import { SOCKET_URL } from '@/src/config/api';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = SOCKET_URL;
 
 // ── Singleton ──────────────────────────────────────────────────────────────────
 

@@ -32,9 +32,18 @@ yarn-error.*
 
 # local env files
 .env*.local
+*.local
+
+# All .env files (secrets — use .env.example instead)
+.env
+server/.env
 
 # typescript
 *.tsbuildinfo
+
+# Build output
+build/
+server/dist/
 
 # generated native folders
 /ios

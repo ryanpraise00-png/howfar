@@ -38,15 +38,20 @@ export async function sendOtp(app: FastifyInstance, rawPhone: string) {
   await redis.set(OTP_KEY(phone), otp, 'EX', OTP_TTL);
   await redis.del(OTP_ATTEMPTS(phone)); // reset attempt counter on new OTP
 
-  const sms = await smsService.sendOtp(phone, otp);
-  if (!sms.ok) {
-    // Roll back the stored OTP so a retry re-generates a fresh one
-    await redis.del(OTP_KEY(phone));
-    throw {
-      statusCode: sms.code === 'SMS_DELIVERY_FAILED' ? 503 : 500,
-      code: sms.code,
-      message: sms.message,
-    };
+  const isSandbox = process.env.AT_USERNAME === 'sandbox' || !process.env.AT_API_KEY || process.env.AT_API_KEY === 'your-at-api-key';
+
+  if (isSandbox) {
+    console.log(`[DEV OTP] ${phone}: ${otp}`);
+  } else {
+    const sms = await smsService.sendOtp(phone, otp);
+    if (!sms.ok) {
+      await redis.del(OTP_KEY(phone));
+      throw {
+        statusCode: sms.code === 'SMS_DELIVERY_FAILED' ? 503 : 500,
+        code: sms.code,
+        message: sms.message,
+      };
+    }
   }
 
   return { success: true, expiresIn: OTP_TTL };

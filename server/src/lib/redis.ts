@@ -6,7 +6,10 @@ export const redis = new Redis(REDIS_URL, {
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
   lazyConnect: false,
-  // Upstash and other TLS Redis hosts use rediss:// — enable TLS when detected
+  retryStrategy: (times) => {
+    if (times > 5) return null; // stop retrying after 5 attempts
+    return Math.min(times * 500, 3000);
+  },
   tls: REDIS_URL.startsWith('rediss://') ? {} : undefined,
 });
 

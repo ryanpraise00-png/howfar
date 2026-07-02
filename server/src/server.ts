@@ -1,10 +1,3 @@
-console.log('[DEBUG] ENV CHECK:', {
-  DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING',
-  REDIS_URL: process.env.REDIS_URL ? 'SET' : 'MISSING',
-  PORT: process.env.PORT,
-  NODE_ENV: process.env.NODE_ENV
-});
-
 // force redeploy
 import dotenv from 'dotenv';
 
@@ -21,14 +14,11 @@ import { pingRedis } from './lib/redis';
 const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
 async function main() {
-  // Build Fastify app
   const app = await buildApp();
 
-  // Attach Socket.io to Fastify's underlying http.Server
   const io = createSocketServer(app, app.server);
   app.decorate('io', io);
 
-  // Health-check connectivity — non-blocking; never prevent server from starting
   Promise.race([
     prisma.$connect(),
     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
@@ -39,12 +29,9 @@ async function main() {
   const redisOk = await pingRedis();
   console.log(`[Redis] ping: ${redisOk ? 'PONG ✓' : 'failed ✗'}`);
 
-  // Start listening
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log(`[Server] HowFar API running on http://0.0.0.0:${PORT}`);
-  console.log(`[Server] Health: http://localhost:${PORT}/health`);
 
-  // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`\n[Server] ${signal} received — shutting down…`);
     await app.close();

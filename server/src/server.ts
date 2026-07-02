@@ -1,4 +1,10 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+// Only load .env file in development — in production
+// Railway injects env vars directly
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 import { buildApp } from './app';
 import { createSocketServer } from './sockets/index';
 import { prisma } from './lib/prisma';

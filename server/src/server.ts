@@ -1,3 +1,10 @@
+console.log('[DEBUG] ENV CHECK:', {
+  DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING',
+  REDIS_URL: process.env.REDIS_URL ? 'SET' : 'MISSING',
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV
+});
+
 // force redeploy
 import dotenv from 'dotenv';
 

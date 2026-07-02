@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
@@ -161,8 +162,8 @@ export async function completeProfile(userId: string, name: string, about?: stri
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 async function issueTokens(app: FastifyInstance, userId: string, phone: string) {
-  const accessJti  = crypto.randomUUID();
-  const refreshJti = crypto.randomUUID();
+  const accessJti  = randomUUID();
+  const refreshJti = randomUUID();
 
   // Access token: 15-minute lifetime + jti for blacklisting on logout
   const accessToken = app.jwt.sign(

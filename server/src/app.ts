@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
@@ -33,7 +34,7 @@ export async function buildApp() {
         : undefined,
     },
     // Attach request id to every log entry automatically
-    genReqId: () => crypto.randomUUID(),
+    genReqId: () => randomUUID(),
   });
 
   // ── Plugins ──────────────────────────────────────────────────────────────────

@@ -14,13 +14,13 @@ async function main() {
   const io = createSocketServer(app, app.server);
   app.decorate('io', io);
 
-  // Health-check connectivity
-  try {
-    await prisma.$connect();
-    console.log('[Prisma] database connected');
-  } catch (err) {
-    console.warn('[Prisma] database not reachable at startup:', (err as Error).message);
-  }
+  // Health-check connectivity — non-blocking; never prevent server from starting
+  Promise.race([
+    prisma.$connect(),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+  ])
+    .then(() => console.log('[Prisma] database connected'))
+    .catch((err: Error) => console.warn('[Prisma] database not reachable at startup:', err.message));
 
   const redisOk = await pingRedis();
   console.log(`[Redis] ping: ${redisOk ? 'PONG ✓' : 'failed ✗'}`);

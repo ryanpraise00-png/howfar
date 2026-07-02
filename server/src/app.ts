@@ -54,11 +54,21 @@ export async function buildApp() {
   });
 
   // ── Global rate limiting (100 req / 60 s per IP) ─────────────────────────────
+  // Pass Redis for distributed rate limiting; fall back to in-memory if Redis
+  // isn't available so a cold Redis connection never crashes the boot sequence.
+  let rateLimitRedis: typeof redis | undefined;
+  try {
+    const pong = await redis.ping();
+    if (pong === 'PONG') rateLimitRedis = redis;
+  } catch {
+    app.log.warn('Redis unavailable at startup — rate limiting will use in-memory store');
+  }
+
   await app.register(rateLimit, {
     global: true,
     max: 100,
     timeWindow: '1 minute',
-    redis,
+    ...(rateLimitRedis ? { redis: rateLimitRedis } : {}),
     keyGenerator: (req) => req.ip,
     errorResponseBuilder: (_req, context) => ({
       error: {

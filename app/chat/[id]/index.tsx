@@ -28,6 +28,7 @@ import { uploadMedia } from '@/src/services/media';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -615,12 +616,31 @@ export default function ChatScreen() {
 
   // ── selection bar ─────────────────────────────────────────────────────────
 
+  async function forwardToVault() {
+    const msg = messages.find((m) => m._type === 'message' && m.id === selectedId) as MessageEntry | undefined;
+    const text = msg?.text ?? msg?.documentName ?? '';
+    if (!text) { setSelectedId(null); return; }
+    const raw = await AsyncStorage.getItem('@vault_messages');
+    const existing = raw ? JSON.parse(raw) : [];
+    const entry = {
+      id: `vault-${Date.now()}-fwd`,
+      text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    await AsyncStorage.setItem('@vault_messages', JSON.stringify([entry, ...existing]));
+    setSelectedId(null);
+    showComingSoon('Saved to Vault ✓');
+  }
+
   const SelectionBar = () => (
     <View style={[selStyles.bar, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
       <TouchableOpacity onPress={() => setSelectedId(null)}>
         <Ionicons name="close" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       <View style={selStyles.actions}>
+        <TouchableOpacity style={selStyles.btn} onPress={forwardToVault}>
+          <Ionicons name="shield-checkmark-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
         {(['arrow-undo-outline', 'arrow-redo-outline', 'copy-outline', 'star-outline', 'trash-outline', 'information-circle-outline'] as const).map((name) => (
           <TouchableOpacity key={name} style={selStyles.btn} onPress={() => {
             showComingSoon(name.replace(/-outline$/, '').replace(/-/g, ' '));

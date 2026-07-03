@@ -12,6 +12,7 @@ import { chatRoutes } from './routes/chats';
 import { userRoutes } from './routes/users';
 import { mediaRoutes } from './routes/media';
 import { statusRoutes } from './routes/status';
+import { xenRoutes } from './routes/xen';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -89,6 +90,7 @@ export async function buildApp() {
   await app.register(userRoutes,   { prefix: '/api/users' });
   await app.register(mediaRoutes,  { prefix: '/api/media' });
   await app.register(statusRoutes, { prefix: '/api/status' });
+  await app.register(xenRoutes,    { prefix: '/xen' });
 
   return app;
 }

@@ -214,19 +214,59 @@ export default function ChatsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListHeaderComponent={
-          archivedCount > 0 ? (
+          <>
+            {/* Pinned system chats */}
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary, backgroundColor: colors.surface }]}>
+              Pinned
+            </Text>
+
+            {/* Vault */}
             <Pressable
-              style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-              onPress={() => router.push('/archived')}
+              style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+              onPress={() => router.push('/vault')}
             >
-              <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
-                <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
+              <View style={[styles.systemAvatar, { backgroundColor: '#0B9E8E' }]}>
+                <Ionicons name="shield-checkmark" size={22} color="#FFFFFF" />
               </View>
-              <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
-              <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              <View style={styles.systemMid}>
+                <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Vault</Text>
+                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>Your private notes</Text>
+              </View>
+              <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
             </Pressable>
-          ) : null
+
+            {/* Xen */}
+            <Pressable
+              style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+              onPress={() => router.push('/xen')}
+            >
+              <View style={[styles.systemAvatar, { backgroundColor: '#6B3FA0' }]}>
+                <Ionicons name="hardware-chip-outline" size={22} color="#FFFFFF" />
+              </View>
+              <View style={styles.systemMid}>
+                <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Xen</Text>
+                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>AI Assistant · Xensiq</Text>
+              </View>
+            </Pressable>
+
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary, backgroundColor: colors.surface }]}>
+              All chats
+            </Text>
+
+            {archivedCount > 0 && (
+              <Pressable
+                style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                onPress={() => router.push('/archived')}
+              >
+                <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
+                  <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
+                </View>
+                <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
+                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </Pressable>
+            )}
+          </>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -321,6 +361,29 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
+  sectionLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    letterSpacing: 0.4,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  systemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  systemAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  systemMid: { flex: 1 },
   archivedRow: {
     flexDirection: 'row',
     alignItems: 'center',

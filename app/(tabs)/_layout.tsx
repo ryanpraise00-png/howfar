@@ -11,15 +11,16 @@ interface TabIconProps {
   color: string;
   size: number;
   badge?: number;
+  badgeColor: string;
 }
 
-function TabIcon({ name, color, size, badge }: TabIconProps) {
+function TabIcon({ name, color, size, badge, badgeColor }: TabIconProps) {
   return (
     <View>
       <Ionicons name={name} size={size} color={color} />
       {badge != null && badge > 0 && (
         <View style={styles.badge}>
-          <View style={styles.badgeDot} />
+          <View style={[styles.badgeDot, { backgroundColor: badgeColor }]} />
         </View>
       )}
     </View>
@@ -34,8 +35,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: colors.tabActive,
+        tabBarInactiveTintColor: colors.tabInactive,
         tabBarLabelStyle: styles.label,
         tabBarStyle: {
           backgroundColor: colors.surface,
@@ -52,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: 'Chats',
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="chatbubbles-outline" color={color} size={size} />
+            <TabIcon name="chatbubbles-outline" color={color} size={size} badgeColor={colors.accentAmber} />
           ),
         }}
       />
@@ -61,7 +62,7 @@ export default function TabsLayout() {
         options={{
           title: 'Moments',
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="ellipse-outline" color={color} size={size} />
+            <TabIcon name="ellipse-outline" color={color} size={size} badgeColor={colors.accentAmber} />
           ),
         }}
       />
@@ -70,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: 'Circles',
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="people-outline" color={color} size={size} />
+            <TabIcon name="people-outline" color={color} size={size} badgeColor={colors.accentAmber} />
           ),
         }}
       />
@@ -79,7 +80,7 @@ export default function TabsLayout() {
         options={{
           title: 'Calls',
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="call-outline" color={color} size={size} />
+            <TabIcon name="call-outline" color={color} size={size} badgeColor={colors.accentAmber} />
           ),
         }}
       />
@@ -101,7 +102,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#F2A93B',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },

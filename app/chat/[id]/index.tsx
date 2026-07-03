@@ -47,7 +47,7 @@ import { mockGroupMessages } from '@/src/data/mockGroupMessages';
 
 // ─── sender color palette ────────────────────────────────────────────────────
 
-const SENDER_COLORS = ['#0B5E5C', '#1E9C8C', '#5856D6', '#FF6B35', '#FF2D55', '#FF9500', '#34C759'];
+const SENDER_COLORS = ['#14213D', '#3D5AFE', '#5856D6', '#FF6B35', '#FF2D55', '#FF9500', '#34C759'];
 function senderColor(id: string): string {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;

@@ -20,7 +20,7 @@ function getInitials(name: string) {
 }
 
 function hashColor(name: string) {
-  const palette = ['#0B5E5C', '#1E9C8C', '#5856D6', '#AF52DE', '#FF6B35', '#2C7BB2'];
+  const palette = ['#14213D', '#3D5AFE', '#5856D6', '#AF52DE', '#FF6B35', '#2C7BB2'];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return palette[Math.abs(hash) % palette.length];

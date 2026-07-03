@@ -26,7 +26,7 @@ const NOW = Date.now();
 const MIN = 60_000;
 
 export const TEXT_BG_COLORS = [
-  '#0B5E5C', '#1E9C8C', '#5856D6', '#FF6B35',
+  '#14213D', '#3D5AFE', '#5856D6', '#FF6B35',
   '#FF2D55', '#FF9500', '#34C759', '#007AFF',
 ];
 
@@ -51,7 +51,7 @@ export const contactStatuses: ContactStatus[] = [
         id: 's1b',
         kind: 'text',
         text: 'Sunday energy ☀️',
-        bgColor: '#0B5E5C',
+        bgColor: '#14213D',
         textColor: '#FFFFFF',
         postedAt: NOW - 8 * MIN,
       },

@@ -26,7 +26,7 @@ function getInitial(name: string): string {
 }
 
 // Deterministic background color from name
-const AVATAR_COLORS = ['#0B5E5C', '#1E9C8C', '#5856D6', '#FF6B35', '#FF2D55'];
+const AVATAR_COLORS = ['#14213D', '#3D5AFE', '#5856D6', '#FF6B35', '#FF2D55'];
 function avatarBg(name: string): string {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;

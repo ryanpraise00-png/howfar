@@ -72,7 +72,7 @@ function StatusContent({ item }: { item: StatusItem }) {
     return <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFill} contentFit="cover" />;
   }
   return (
-    <View style={[contentStyles.textBg, { backgroundColor: item.bgColor ?? '#0B5E5C' }]}>
+    <View style={[contentStyles.textBg, { backgroundColor: item.bgColor ?? '#14213D' }]}>
       <Text style={[contentStyles.statusText, { color: item.textColor ?? '#FFFFFF' }]}>
         {item.text}
       </Text>

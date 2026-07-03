@@ -19,7 +19,7 @@ interface IconButtonProps {
 export function IconButton({
   name,
   size = 22,
-  color = '#0B5E5C',
+  color = '#14213D',
   backgroundColor = 'transparent',
   onPress,
   style,

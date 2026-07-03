@@ -16,7 +16,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.xensiq.howfar"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -24,7 +25,14 @@
     "scheme": "howfar",
     "plugins": [
       "expo-router",
-      "expo-font"
-    ]
+      "expo-font",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "db6f4c77-c857-4522-ba84-327596564a8c"
+      }
+    }
   }
 }

@@ -59,7 +59,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="updates"
         options={{
-          title: 'Updates',
+          title: 'Moments',
           tabBarIcon: ({ color, size }) => (
             <TabIcon name="ellipse-outline" color={color} size={size} />
           ),
@@ -68,7 +68,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="communities"
         options={{
-          title: 'Communities',
+          title: 'Circles',
           tabBarIcon: ({ color, size }) => (
             <TabIcon name="people-outline" color={color} size={size} />
           ),

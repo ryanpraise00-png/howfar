@@ -113,7 +113,7 @@ export default function ProfileEditScreen() {
 
         {/* About field */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border, marginTop: 16 }]}>
-          <Text style={[styles.fieldLabel, { color: colors.primary }]}>ABOUT</Text>
+          <Text style={[styles.fieldLabel, { color: colors.primary }]}>BIO</Text>
           <TextInput
             style={[styles.fieldInput, { color: colors.textPrimary, borderBottomColor: colors.primary }]}
             value={aboutText}

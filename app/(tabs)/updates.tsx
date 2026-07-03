@@ -104,7 +104,7 @@ function MyStatusRow({
       <View style={styles.rowInfo}>
         <Text style={[styles.rowName, { color: colors.textPrimary }]}>{name}</Text>
         <Text style={[textStyles.caption, { color: colors.textSecondary }]}>
-          {hasPosted && latest ? relativeTime(new Date(latest.createdAt).getTime()) : 'Tap to add status update'}
+          {hasPosted && latest ? relativeTime(new Date(latest.createdAt).getTime()) : 'Tap to add a moment'}
         </Text>
       </View>
 
@@ -206,8 +206,8 @@ export default function UpdatesScreen() {
   const viewed   = contactList.filter((s) => s.viewed);
 
   const sections = [
-    ...(unviewed.length > 0 ? [{ title: 'Recent updates', data: unviewed }] : []),
-    ...(viewed.length > 0   ? [{ title: 'Viewed updates',  data: viewed  }] : []),
+    ...(unviewed.length > 0 ? [{ title: 'Recent moments', data: unviewed }] : []),
+    ...(viewed.length > 0   ? [{ title: 'Viewed moments',  data: viewed  }] : []),
   ];
 
   const handleContactPress = useCallback((cs: ContactStatus) => {
@@ -218,7 +218,7 @@ export default function UpdatesScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
         <View style={styles.headerInner}>
-          <Text style={styles.headerTitle}>Updates</Text>
+          <Text style={styles.headerTitle}>Moments</Text>
           <View style={styles.headerRight}>
             <IconButton name="search-outline" color="#FFFFFF" onPress={() => showComingSoon('Search')} accessibilityLabel="Search updates" />
             <IconButton name="ellipsis-vertical" color="#FFFFFF" onPress={() => showComingSoon()} accessibilityLabel="More options" />
@@ -258,7 +258,7 @@ export default function UpdatesScreen() {
           <View style={styles.emptyWrap}>
             <Ionicons name="ellipse-outline" size={52} color={colors.border} />
             <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: 12 }]}>
-              No status updates yet
+              No moments yet
             </Text>
           </View>
         }

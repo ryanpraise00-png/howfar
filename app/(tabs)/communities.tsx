@@ -8,7 +8,7 @@ export default function CommunitiesScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScreenHeader
-        title="Communities"
+        title="Circles"
         variant="teal"
         showBack={false}
         colors={colors}
@@ -18,7 +18,7 @@ export default function CommunitiesScreen() {
       />
       <EmptyState
         icon="people-outline"
-        title="Communities coming soon"
+        title="Circles coming soon"
         subtitle="Group spaces for neighbourhoods, schools, and organisations — launching soon."
         colors={colors}
       />

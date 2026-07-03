@@ -43,7 +43,7 @@ model User {
   id           String   @id @default(cuid())
   phone        String   @unique
   name         String
-  about        String   @default("Hey there! I am using HowFar")
+  about        String   @default("Hey! I'm on HowFar")
   avatarUrl    String?
   createdAt    DateTime @default(now())
   lastSeen     DateTime @default(now())

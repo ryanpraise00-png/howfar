@@ -25,7 +25,7 @@ export default function ProfileSetupScreen() {
   const { displayName: savedName, about: savedAbout, setProfile, completeOnboarding } = useAuthStore();
 
   const [name, setName] = useState(savedName);
-  const [about, setAbout] = useState(savedAbout || 'Hey there! I am using HowFar');
+  const [about, setAbout] = useState(savedAbout || 'Hey! I'm on HowFar');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,7 +128,7 @@ export default function ProfileSetupScreen() {
             <View style={[styles.inputBox, { borderColor: colors.border, backgroundColor: colors.surface }]}>
               <TextInput
                 style={[styles.input, { color: colors.textPrimary }]}
-                placeholder="Hey there! I am using HowFar"
+                placeholder="Hey! I'm on HowFar"
                 placeholderTextColor={colors.textSecondary}
                 value={about}
                 onChangeText={setAbout}

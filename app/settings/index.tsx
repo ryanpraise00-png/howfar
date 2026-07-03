@@ -14,7 +14,7 @@ const SETTINGS_ROWS = [
   { icon: 'lock-closed-outline' as const,  iconBg: '#FF6B35', label: 'Privacy',           route: '/settings/privacy' },
   { icon: 'chatbubble-outline' as const,   iconBg: '#34C759', label: 'Chats',             route: '/settings/chats' },
   { icon: 'notifications-outline' as const,iconBg: '#FF9500', label: 'Notifications',     route: '/settings/notifications' },
-  { icon: 'server-outline' as const,       iconBg: '#007AFF', label: 'Storage and Data',  route: '/settings/storage' },
+  { icon: 'server-outline' as const,       iconBg: '#007AFF', label: 'Storage',  route: '/settings/storage' },
   { icon: 'help-circle-outline' as const,  iconBg: '#6B7280', label: 'Help',              route: '/settings/help' },
   { icon: 'share-social-outline' as const, iconBg: '#FF2D55', label: 'Invite a Friend',   route: null },
 ] as const;
@@ -51,7 +51,7 @@ export default function SettingsScreen() {
               {displayName || 'Your Name'}
             </Text>
             <Text style={[textStyles.body, { color: colors.textSecondary }]} numberOfLines={1}>
-              {about || 'Hey there! I am using HowFar'}
+              {about || "Hey! I'm on HowFar"}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />

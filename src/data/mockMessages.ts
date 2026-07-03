@@ -173,6 +173,6 @@ export const mockMessages: ListItem[] = [
   {
     _type: 'system',
     id: 'sys-enc',
-    text: '🔒 Messages are end-to-end encrypted. No one outside of this chat can read them.',
+    text: 'Your conversation is fully encrypted 🔒',
   },
 ];

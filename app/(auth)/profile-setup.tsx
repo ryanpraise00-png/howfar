@@ -25,7 +25,7 @@ export default function ProfileSetupScreen() {
   const { displayName: savedName, about: savedAbout, setProfile, completeOnboarding } = useAuthStore();
 
   const [name, setName] = useState(savedName);
-  const [about, setAbout] = useState(savedAbout || 'Hey! I'm on HowFar');
+  const [about, setAbout] = useState(savedAbout || "Hey! I'm on HowFar");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

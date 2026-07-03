@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { api } from '@/src/services/api';
+import ChatBackground from '@/src/components/ChatBackground';
 
 type Role = 'user' | 'assistant';
 
@@ -153,7 +154,7 @@ export default function XenScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
+      style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
@@ -170,6 +171,7 @@ export default function XenScreen() {
         </View>
       </View>
 
+      <ChatBackground>
       {/* Messages */}
       <FlatList
         data={flatData}
@@ -247,6 +249,7 @@ export default function XenScreen() {
           <Ionicons name="send" size={18} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
+      </ChatBackground>
     </KeyboardAvoidingView>
   );
 }

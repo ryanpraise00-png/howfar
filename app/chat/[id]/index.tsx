@@ -35,6 +35,7 @@ import { Image } from 'expo-image';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useTheme } from '@/src/theme';
 import { Avatar } from '@/src/components';
+import ChatBackground from '@/src/components/ChatBackground';
 import { mockChats } from '@/src/data/mockChats';
 import { mockContacts } from '@/src/data/mockContacts';
 import { getGroupChat } from '@/src/data/mockGroups';
@@ -657,7 +658,7 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
+      style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={0}
     >
@@ -714,6 +715,8 @@ export default function ChatScreen() {
         </View>
       )}
 
+      {/* ── Body: background + messages + input ── */}
+      <ChatBackground>
       {/* ── Message list ── */}
       <FlatList
         ref={listRef}
@@ -793,6 +796,7 @@ export default function ChatScreen() {
           }
         </TouchableOpacity>
       </View>
+      </ChatBackground>
 
       {/* ── Attachment sheet ── */}
       <Modal visible={showAttachment} transparent animationType="slide" onRequestClose={() => setShowAttachment(false)}>

@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
+import ChatBackground from '@/src/components/ChatBackground';
 
 const STORAGE_KEY = '@vault_messages';
 
@@ -77,7 +78,7 @@ export default function VaultScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
+      style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
@@ -97,6 +98,7 @@ export default function VaultScreen() {
         </TouchableOpacity>
       </View>
 
+      <ChatBackground>
       {/* Messages */}
       <FlatList
         data={messages}
@@ -141,6 +143,7 @@ export default function VaultScreen() {
           <Ionicons name="send" size={18} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
+      </ChatBackground>
     </KeyboardAvoidingView>
   );
 }

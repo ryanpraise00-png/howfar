@@ -11,11 +11,13 @@ import {
   Easing,
 } from 'react-native';
 import { useState, useCallback, useRef, useEffect } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { api } from '@/src/services/api';
+import { showSuccess } from '@/src/lib/toast';
 import ChatBackground from '@/src/components/ChatBackground';
 
 type Role = 'user' | 'assistant';
@@ -78,6 +80,7 @@ export default function XenScreen() {
   const [messages, setMessages] = useState<XenMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
   const isFirstOpen = messages.length === 0;
 
@@ -124,10 +127,23 @@ export default function XenScreen() {
     sendMessage(inputText);
   }, [inputText, sendMessage]);
 
+  async function handleLongPress(item: XenMessage) {
+    setSelectedId(item.id);
+    await Clipboard.setStringAsync(item.text);
+    showSuccess('Copied to clipboard');
+    setTimeout(() => setSelectedId(null), 800);
+  }
+
   const renderItem = useCallback(({ item }: { item: XenMessage }) => {
     const isUser = item.role === 'user';
+    const isSelected = selectedId === item.id;
     return (
-      <View style={[bubbleStyles.wrapper, isUser ? bubbleStyles.out : bubbleStyles.in]}>
+      <TouchableOpacity
+        onLongPress={() => handleLongPress(item)}
+        onPress={() => { if (selectedId) setSelectedId(null); }}
+        activeOpacity={1}
+        style={[bubbleStyles.wrapper, isUser ? bubbleStyles.out : bubbleStyles.in]}
+      >
         {!isUser && (
           <View style={[bubbleStyles.botAvatar, { backgroundColor: '#6B3FA0' }]}>
             <Ionicons name="hardware-chip-outline" size={14} color="#FFFFFF" />
@@ -136,8 +152,8 @@ export default function XenScreen() {
         <View style={[
           bubbleStyles.bubble,
           isUser
-            ? { backgroundColor: colors.bubbleSent, borderBottomRightRadius: 4 }
-            : { backgroundColor: colors.bubbleIncoming, borderBottomLeftRadius: 4 },
+            ? { backgroundColor: isSelected ? colors.accentAmber : colors.bubbleSent, borderBottomRightRadius: 4 }
+            : { backgroundColor: isSelected ? colors.accentAmber + '44' : colors.bubbleIncoming, borderBottomLeftRadius: 4 },
         ]}>
           <Text style={[bubbleStyles.text, { color: isUser ? '#FFFFFF' : colors.textPrimary }]}>
             {item.text}
@@ -146,9 +162,9 @@ export default function XenScreen() {
             {item.timestamp}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
-  }, [colors]);
+  }, [colors, selectedId]);
 
   const flatData = messages;
 

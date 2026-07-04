@@ -31,7 +31,7 @@ export default function ProfileEditScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { showError('Permission denied', 'Gallery access is required'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images' as const,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,

@@ -28,7 +28,7 @@ import { uploadMedia } from '@/src/services/media';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { starMessage, deleteMessage, updateChatSettings } from '@/src/services/chats';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -218,7 +218,7 @@ export default function ChatScreen() {
 
   // ── upload / voice recording state ────────────────────────────────────────
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
 
   const listRef = useRef<FlatList>(null);
@@ -361,7 +361,7 @@ export default function ChatScreen() {
     if (status !== 'granted') { showError('Permission denied', 'Gallery access is required'); return; }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images', 'videos'] as const,
       quality: 0.85,
       allowsEditing: false,
     });
@@ -411,13 +411,11 @@ export default function ChatScreen() {
 
   async function startRecording() {
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') { showError('Permission denied', 'Microphone access is required'); return; }
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording: rec } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-      );
-      setRecording(rec);
+      const { granted } = await requestRecordingPermissionsAsync();
+      if (!granted) { showError('Permission denied', 'Microphone access is required'); return; }
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
       setIsRecording(true);
     } catch (err: any) {
       showError('Recording failed', err?.message);
@@ -425,19 +423,17 @@ export default function ChatScreen() {
   }
 
   async function stopRecording() {
-    if (!recording) return;
+    if (!isRecording) return;
     setIsRecording(false);
     try {
-      await recording.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-      const uri = recording.getURI();
+      await recorder.stop();
+      await setAudioModeAsync({ allowsRecording: false });
+      const uri = recorder.uri;
       if (uri) {
         await sendMediaMessage(uri, `voice_${Date.now()}.m4a`, 'audio/mp4', 'VOICE');
       }
     } catch (err: any) {
       showError('Could not send voice note', err?.message);
-    } finally {
-      setRecording(null);
     }
   }
 

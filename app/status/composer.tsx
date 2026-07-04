@@ -45,7 +45,7 @@ export default function StatusComposerScreen() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images', 'videos'] as const,
       quality: 0.9,
     });
     if (result.canceled || !result.assets[0]) return;

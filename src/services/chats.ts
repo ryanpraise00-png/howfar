@@ -111,7 +111,7 @@ export async function createGroupChat(
 
 export async function updateChatSettings(
   chatId: string,
-  settings: { isMuted?: boolean; isPinned?: boolean; isArchived?: boolean },
+  settings: { isMuted?: boolean; isPinned?: boolean; isArchived?: boolean; disappearingMsgTtl?: number | null },
 ) {
   return api.patch(`/api/chats/${chatId}/settings`, settings);
 }
@@ -122,4 +122,35 @@ export async function deleteChat(chatId: string) {
 
 export async function searchUsers(q: string): Promise<ApiUser[]> {
   return api.get<ApiUser[]>(`/api/users/search?q=${encodeURIComponent(q)}`);
+}
+
+export async function unarchiveChat(chatId: string) {
+  return updateChatSettings(chatId, { isArchived: false });
+}
+
+export async function starMessage(messageId: string): Promise<{ id: string; isStarred: boolean }> {
+  return api.patch(`/api/messages/${messageId}/star`, {});
+}
+
+export async function deleteMessage(messageId: string, forEveryone: boolean) {
+  return api.delete(`/api/messages/${messageId}`, { body: { forEveryone } });
+}
+
+export async function fetchMessageReceipts(messageId: string): Promise<Array<{
+  userId: string; name: string; avatarUrl: string | null;
+  deliveredAt: string | null; readAt: string | null;
+}>> {
+  return api.get(`/api/messages/${messageId}/receipts`);
+}
+
+export async function blockUser(blockedUserId: string) {
+  return api.post('/api/users/block', { blockedUserId });
+}
+
+export async function reportUser(reportedUserId: string, reason: string) {
+  return api.post('/api/users/report', { reportedUserId, reason });
+}
+
+export async function addContact(contactId: string, nickname?: string) {
+  return api.post('/api/users/contacts', { contactId, nickname });
 }

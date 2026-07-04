@@ -11,8 +11,9 @@ interface Props {
   colors: AppColors;
   onPress: () => void;
   onArchive: (id: string) => void;
-  onPin: (id: string) => void;
-  onMute: (id: string) => void;
+  archiveLabel?: string;
+  onPin?: (id: string) => void;
+  onMute?: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -35,7 +36,7 @@ function ActionBtn({
   );
 }
 
-export function SwipeableChatRow({ chat, colors, onPress, onArchive, onPin, onMute, onDelete }: Props) {
+export function SwipeableChatRow({ chat, colors, onPress, onArchive, archiveLabel, onPin, onMute, onDelete }: Props) {
   const swipeRef = useRef<Swipeable>(null);
 
   const close = () => swipeRef.current?.close();
@@ -44,27 +45,31 @@ export function SwipeableChatRow({ chat, colors, onPress, onArchive, onPin, onMu
     <View style={styles.leftActions}>
       <ActionBtn
         icon="archive-outline"
-        label="Archive"
+        label={archiveLabel ?? 'Archive'}
         bg="#6B7280"
         onPress={() => { close(); onArchive(chat.id); }}
       />
-      <ActionBtn
-        icon={chat.isPinned ? 'pin' : 'pin-outline'}
-        label={chat.isPinned ? 'Unpin' : 'Pin'}
-        bg={colors.primary}
-        onPress={() => { close(); onPin(chat.id); }}
-      />
+      {onPin && (
+        <ActionBtn
+          icon={chat.isPinned ? 'pin' : 'pin-outline'}
+          label={chat.isPinned ? 'Unpin' : 'Pin'}
+          bg={colors.primary}
+          onPress={() => { close(); onPin(chat.id); }}
+        />
+      )}
     </View>
   );
 
   const renderRight = () => (
     <View style={styles.rightActions}>
-      <ActionBtn
-        icon={chat.isMuted ? 'volume-medium-outline' : 'volume-mute-outline'}
-        label={chat.isMuted ? 'Unmute' : 'Mute'}
-        bg={colors.accentTeal}
-        onPress={() => { close(); onMute(chat.id); }}
-      />
+      {onMute && (
+        <ActionBtn
+          icon={chat.isMuted ? 'volume-medium-outline' : 'volume-mute-outline'}
+          label={chat.isMuted ? 'Unmute' : 'Mute'}
+          bg={colors.accentTeal}
+          onPress={() => { close(); onMute(chat.id); }}
+        />
+      )}
       <ActionBtn
         icon="trash-outline"
         label="Delete"

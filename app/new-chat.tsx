@@ -16,7 +16,7 @@ import { useTheme } from '@/src/theme';
 import { Avatar } from '@/src/components';
 import { mockContacts, type Contact } from '@/src/data/mockContacts';
 import { searchUsers, createDirectChat, type ApiUser } from '@/src/services/chats';
-import { showError } from '@/src/lib/toast';
+import { showError, showComingSoon } from '@/src/lib/toast';
 
 const QUICK_ACTIONS = [
   { id: 'group',     icon: 'people' as const,        label: 'New group' },
@@ -151,6 +151,8 @@ export default function NewChatScreen() {
                 {QUICK_ACTIONS.map((a) => (
                   <TouchableOpacity key={a.id} style={styles.quickRow} onPress={() => {
                     if (a.id === 'group') router.push('/new-group/select-members');
+                    else if (a.id === 'contact') router.push('/new-contact');
+                    else if (a.id === 'community') showComingSoon('Communities');
                   }}>
                     <View style={[styles.quickIcon, { backgroundColor: colors.primary }]}>
                       <Ionicons name={a.icon} size={20} color="#FFFFFF" />

@@ -12,7 +12,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { showComingSoon, showError } from '@/src/lib/toast';
+import { showComingSoon, showError, showSuccess } from '@/src/lib/toast';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChatStore } from '@/src/store/chatStore';
@@ -25,10 +25,12 @@ import {
 } from '@/src/services/socket';
 import { fetchMessages, apiMessageToStore } from '@/src/services/chats';
 import { uploadMedia } from '@/src/services/media';
+import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { starMessage, deleteMessage } from '@/src/services/chats';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -633,6 +635,56 @@ export default function ChatScreen() {
     showComingSoon('Saved to Vault ✓');
   }
 
+  async function handleSelectionReply() {
+    const msg = messages.find((m) => m._type === 'message' && m.id === selectedId) as MessageEntry | undefined;
+    if (!msg) return;
+    setReplyTo(msg);
+    setSelectedId(null);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }
+
+  async function handleSelectionCopy() {
+    const msg = messages.find((m) => m._type === 'message' && m.id === selectedId) as MessageEntry | undefined;
+    const text = msg?.text ?? msg?.documentName ?? '';
+    if (text) {
+      await Clipboard.setStringAsync(text);
+      showSuccess('Copied to clipboard');
+    }
+    setSelectedId(null);
+  }
+
+  async function handleSelectionStar() {
+    const msgId = selectedId;
+    if (!msgId) return;
+    setSelectedId(null);
+    try {
+      await starMessage(msgId);
+      showSuccess('Message starred');
+    } catch {
+      showError('Could not star message');
+    }
+  }
+
+  function handleSelectionDelete() {
+    const msgId = selectedId;
+    if (!msgId) return;
+    const msg = messages.find((m) => m._type === 'message' && m.id === msgId) as MessageEntry | undefined;
+    const isOwn = msg?.isOutgoing ?? false;
+    setSelectedId(null);
+
+    Alert.alert('Delete message', 'This will delete the message.', [
+      { text: 'Cancel', style: 'cancel' },
+      ...(isOwn ? [{ text: 'Delete for everyone', style: 'destructive' as const, onPress: async () => {
+        setLocalMessages((prev) => prev.filter((m) => m.id !== msgId));
+        try { await deleteMessage(msgId, true); } catch {}
+      }}] : []),
+      { text: 'Delete for me', style: 'destructive', onPress: async () => {
+        setLocalMessages((prev) => prev.filter((m) => m.id !== msgId));
+        try { await deleteMessage(msgId, false); } catch {}
+      }},
+    ]);
+  }
+
   const SelectionBar = () => (
     <View style={[selStyles.bar, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
       <TouchableOpacity onPress={() => setSelectedId(null)}>
@@ -642,14 +694,24 @@ export default function ChatScreen() {
         <TouchableOpacity style={selStyles.btn} onPress={forwardToVault}>
           <Ionicons name="shield-checkmark-outline" size={22} color="#FFFFFF" />
         </TouchableOpacity>
-        {(['arrow-undo-outline', 'arrow-redo-outline', 'copy-outline', 'star-outline', 'trash-outline', 'information-circle-outline'] as const).map((name) => (
-          <TouchableOpacity key={name} style={selStyles.btn} onPress={() => {
-            showComingSoon(name.replace(/-outline$/, '').replace(/-/g, ' '));
-            setSelectedId(null);
-          }}>
-            <Ionicons name={name} size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        ))}
+        <TouchableOpacity style={selStyles.btn} onPress={handleSelectionReply}>
+          <Ionicons name="arrow-undo-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={selStyles.btn} onPress={() => { setSelectedId(null); router.push({ pathname: '/forward', params: { messageId: selectedId ?? '' } }); }}>
+          <Ionicons name="arrow-redo-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={selStyles.btn} onPress={handleSelectionCopy}>
+          <Ionicons name="copy-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={selStyles.btn} onPress={handleSelectionStar}>
+          <Ionicons name="star-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={selStyles.btn} onPress={handleSelectionDelete}>
+          <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={selStyles.btn} onPress={() => { router.push({ pathname: '/message/[id]/info', params: { id: selectedId ?? '' } }); setSelectedId(null); }}>
+          <Ionicons name="information-circle-outline" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
     </View>
   );

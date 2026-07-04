@@ -13,6 +13,8 @@ import { userRoutes } from './routes/users';
 import { mediaRoutes } from './routes/media';
 import { statusRoutes } from './routes/status';
 import { xenRoutes } from './routes/xen';
+import { callRoutes } from './routes/calls';
+import { messageRoutes } from './routes/messages';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -91,6 +93,8 @@ export async function buildApp() {
   await app.register(mediaRoutes,  { prefix: '/api/media' });
   await app.register(statusRoutes, { prefix: '/api/status' });
   await app.register(xenRoutes,    { prefix: '/xen' });
+  await app.register(callRoutes,    { prefix: '/api/calls' });
+  await app.register(messageRoutes, { prefix: '/api/messages' });
 
   return app;
 }

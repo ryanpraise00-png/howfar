@@ -37,6 +37,17 @@ enum StatusType {
   VIDEO
 }
 
+enum CallKind {
+  VOICE
+  VIDEO
+}
+
+enum CallDirection {
+  INCOMING
+  OUTGOING
+  MISSED
+}
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 model User {
@@ -62,6 +73,10 @@ model User {
   statusViews     StatusView[]
   messageReceipts MessageReceipt[]
   messageReactions MessageReaction[]
+  calls           Call[]            @relation("CallInitiator")
+  receivedCalls   Call[]            @relation("CallReceiver")
+  reports         Report[]          @relation("Reporter")
+  reportedBy      Report[]          @relation("ReportedUser")
 }
 
 // ─── Contact ──────────────────────────────────────────────────────────────────
@@ -146,6 +161,7 @@ model Message {
   lat         Float?
   lng         Float?
   isForwarded Boolean     @default(false)
+  isStarred   Boolean     @default(false)
   replyToId   String?
   isDeleted   Boolean     @default(false)
   deletedFor  String[]
@@ -220,4 +236,32 @@ model StatusView {
   viewer     User       @relation(fields: [viewerId], references: [id], onDelete: Cascade)
 
   @@unique([statusPostId, viewerId])
+}
+
+// ─── Call ─────────────────────────────────────────────────────────────────────
+
+model Call {
+  id          String        @id @default(cuid())
+  kind        CallKind
+  direction   CallDirection
+  initiatorId String
+  receiverId  String
+  duration    Int?
+  createdAt   DateTime      @default(now())
+
+  initiator User @relation("CallInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  receiver  User @relation("CallReceiver",  fields: [receiverId],  references: [id], onDelete: Cascade)
+}
+
+// ─── Report ───────────────────────────────────────────────────────────────────
+
+model Report {
+  id             String   @id @default(cuid())
+  reporterId     String
+  reportedUserId String
+  reason         String
+  createdAt      DateTime @default(now())
+
+  reporter     User @relation("Reporter",     fields: [reporterId],     references: [id], onDelete: Cascade)
+  reportedUser User @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
 }

@@ -7,15 +7,18 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/src/theme';
 import { Avatar } from '@/src/components';
 import { mockContacts } from '@/src/data/mockContacts';
 import { createGroupChat } from '@/src/services/chats';
+import { uploadAvatar } from '@/src/services/media';
 import { showError } from '@/src/lib/toast';
 
 export default function GroupDetailsScreen() {
@@ -30,25 +33,52 @@ export default function GroupDetailsScreen() {
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const canCreate = groupName.trim().length >= 1;
 
   const handlePickPhoto = () => {
-    // Mock: use a placeholder Unsplash avatar
-    const placeholders = [
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200',
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200',
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200',
-    ];
-    setPhotoUri(placeholders[Math.floor(Math.random() * placeholders.length)]);
+    Alert.alert('Group photo', 'Choose a photo source', [
+      {
+        text: 'Take photo',
+        onPress: () => router.push('/camera'),
+      },
+      {
+        text: 'Choose from gallery',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') { showError('Permission denied', 'Gallery access is required'); return; }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.85,
+          });
+          if (result.canceled || !result.assets[0]) return;
+          const uri = result.assets[0].uri;
+          setPhotoUri(uri);
+          setUploadingPhoto(true);
+          try {
+            const res = await uploadAvatar(uri);
+            setAvatarUrl(res.avatarUrl);
+          } catch {
+            showError('Could not upload photo');
+          } finally {
+            setUploadingPhoto(false);
+          }
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const handleCreate = async () => {
     if (!canCreate || creating) return;
     setCreating(true);
     try {
-      const chat = await createGroupChat(groupName.trim(), description.trim() || undefined, memberIds);
+      const chat = await createGroupChat(groupName.trim(), description.trim() || undefined, memberIds, avatarUrl ?? undefined);
       router.replace(`/chat/${chat.id}`);
     } catch (err: any) {
       showError('Failed to create group', err?.message);
@@ -72,7 +102,14 @@ export default function GroupDetailsScreen() {
         <View style={styles.photoWrap}>
           <TouchableOpacity onPress={handlePickPhoto} activeOpacity={0.8}>
             {photoUri ? (
-              <Image source={{ uri: photoUri }} style={styles.photo} contentFit="cover" />
+              <>
+                <Image source={{ uri: photoUri }} style={styles.photo} contentFit="cover" />
+                {uploadingPhoto && (
+                  <View style={[StyleSheet.absoluteFillObject, styles.photoSpinner]}>
+                    <ActivityIndicator color="#FFFFFF" />
+                  </View>
+                )}
+              </>
             ) : (
               <View style={[styles.photoPlaceholder, { backgroundColor: colors.border }]}>
                 <Ionicons name="people" size={48} color={colors.textSecondary} />
@@ -184,6 +221,7 @@ const styles = StyleSheet.create({
 
   photoWrap: { alignItems: 'center', marginTop: 32, marginBottom: 24 },
   photo: { width: 120, height: 120, borderRadius: 60 },
+  photoSpinner: { borderRadius: 60, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
   photoPlaceholder: {
     width: 120, height: 120, borderRadius: 60,
     alignItems: 'center', justifyContent: 'center',

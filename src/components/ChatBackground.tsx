@@ -1,13 +1,13 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, Pattern, Rect, G, Polygon, Path, Circle } from 'react-native-svg';
 
-export default function ChatBackground({ children }: { children: React.ReactNode }) {
+export default function ChatBackground({ children, bgColor }: { children: React.ReactNode; bgColor?: string | null }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, bgColor ? { backgroundColor: bgColor } : undefined]}>
       <Svg style={StyleSheet.absoluteFillObject} width="100%" height="100%">
         <Defs>
           <Pattern id="chatbg" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-            <Rect width="120" height="120" fill="#F6F7FB" />
+            <Rect width="120" height="120" fill={bgColor ?? '#F6F7FB'} />
 
             {/* H lettermark */}
             <G opacity="0.055">

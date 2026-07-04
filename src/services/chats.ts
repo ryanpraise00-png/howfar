@@ -105,8 +105,13 @@ export async function createGroupChat(
   name: string,
   description: string | undefined,
   memberIds: string[],
+  avatarUrl?: string,
 ): Promise<{ id: string; name: string }> {
-  return api.post('/api/chats/group', { name, description, memberIds });
+  return api.post('/api/chats/group', { name, description, memberIds, avatarUrl });
+}
+
+export async function addChatMembers(chatId: string, userIds: string[]) {
+  return api.post(`/api/chats/${chatId}/members`, { userIds });
 }
 
 export async function updateChatSettings(

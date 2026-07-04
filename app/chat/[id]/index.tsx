@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { showComingSoon, showError, showSuccess } from '@/src/lib/toast';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChatStore } from '@/src/store/chatStore';
 import { useAuthStore } from '@/src/store/authStore';
@@ -30,7 +30,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { starMessage, deleteMessage } from '@/src/services/chats';
+import { starMessage, deleteMessage, updateChatSettings } from '@/src/services/chats';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -177,6 +177,24 @@ export default function ChatScreen() {
   const [replyTo, setReplyTo] = useState<MessageEntry | null>(null);
   const [showAttachment, setShowAttachment] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  // Search
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMatchIndex, setSearchMatchIndex] = useState(0);
+  const searchRef = useRef<TextInput>(null);
+
+  // Mute
+  const [showMuteSheet, setShowMuteSheet] = useState(false);
+
+  // Wallpaper
+  const [showWallpaperSheet, setShowWallpaperSheet] = useState(false);
+  const [wallpaperColor, setWallpaperColor] = useState<string | null>(null);
+
+  // Load wallpaper from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(`@wallpaper_${chatId}`).then((c) => { if (c) setWallpaperColor(c); });
+  }, [chatId]);
 
   // Typing indicator — from store for others, local for self
   const [selfTyping, setSelfTyping] = useState(false);
@@ -459,7 +477,8 @@ export default function ChatScreen() {
     const msg = item;
     const isOut = msg.isOutgoing;
     const isSelected = selectedId === msg.id;
-    const bg = isOut ? colors.bubbleSent : colors.bubbleIncoming;
+    const isSearchMatch = searchVisible && searchQuery && searchMatches[searchMatchIndex] === msg.id;
+    const bg = isSearchMatch ? colors.accentAmber : (isOut ? colors.bubbleSent : colors.bubbleIncoming);
     const txtColor = isOut ? '#FFFFFF' : colors.textPrimary;
     const metaColor = isOut ? 'rgba(255,255,255,0.7)' : colors.textSecondary;
     const tickColor = msg.status === 'read' ? colors.accentTeal : metaColor;
@@ -588,21 +607,65 @@ export default function ChatScreen() {
     );
   }, [colors, selectedId, isGroup, handleLongPress, handleSwipeReply, uploadingIds]);
 
+  // ── search / mute / wallpaper helpers ────────────────────────────────────
+
+  const searchMatches = useMemo<string[]>(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return messages
+      .filter((m): m is MessageEntry => m._type === 'message' && !!m.text?.toLowerCase().includes(q))
+      .map((m) => m.id);
+  }, [messages, searchQuery]);
+
+  function openSearch() {
+    setShowMenu(false);
+    setSearchVisible(true);
+    setSearchQuery('');
+    setSearchMatchIndex(0);
+    setTimeout(() => searchRef.current?.focus(), 150);
+  }
+
+  function closeSearch() {
+    setSearchVisible(false);
+    setSearchQuery('');
+    setSearchMatchIndex(0);
+  }
+
+  async function handleMute(durationMs: number | null) {
+    setShowMuteSheet(false);
+    const mutedUntil = durationMs ? new Date(Date.now() + durationMs).toISOString() : null;
+    try {
+      await updateChatSettings(chatId, { isMuted: true });
+      showSuccess(durationMs ? 'Notifications muted' : 'Notifications muted always');
+    } catch {
+      showError('Could not mute notifications');
+    }
+  }
+
+  const WALLPAPER_COLORS = ['#F6F7FB', '#E8F5E9', '#FFF3E0', '#E3F2FD', '#FCE4EC', '#F3E5F5'];
+
+  async function handleWallpaper(color: string) {
+    setWallpaperColor(color);
+    setShowWallpaperSheet(false);
+    await AsyncStorage.setItem(`@wallpaper_${chatId}`, color);
+    showSuccess('Wallpaper updated');
+  }
+
   // ── menu items differ for groups vs 1:1 ──────────────────────────────────
 
   const MENU_ITEMS_GROUP = [
-    { label: 'Group info', action: () => { setShowMenu(false); router.push(`/chat/${chatId}/info`); } },
-    { label: 'Search',              action: () => { setShowMenu(false); showComingSoon('Message search'); } },
-    { label: 'Mute notifications',  action: () => { setShowMenu(false); showComingSoon('Mute notifications'); } },
-    { label: 'Wallpaper',           action: () => { setShowMenu(false); showComingSoon('Wallpaper'); } },
+    { label: 'Group info',          action: () => { setShowMenu(false); router.push(`/chat/${chatId}/info`); } },
+    { label: 'Search',              action: openSearch },
+    { label: 'Mute notifications',  action: () => { setShowMenu(false); setShowMuteSheet(true); } },
+    { label: 'Wallpaper',           action: () => { setShowMenu(false); setShowWallpaperSheet(true); } },
     { label: 'More',                action: () => { setShowMenu(false); showComingSoon(); } },
   ];
 
   const MENU_ITEMS_DM = [
     { label: 'View contact',        action: () => { setShowMenu(false); router.push(`/contact/${chatId}/info`); } },
-    { label: 'Search',              action: () => { setShowMenu(false); showComingSoon('Message search'); } },
-    { label: 'Mute notifications',  action: () => { setShowMenu(false); showComingSoon('Mute notifications'); } },
-    { label: 'Wallpaper',           action: () => { setShowMenu(false); showComingSoon('Wallpaper'); } },
+    { label: 'Search',              action: openSearch },
+    { label: 'Mute notifications',  action: () => { setShowMenu(false); setShowMuteSheet(true); } },
+    { label: 'Wallpaper',           action: () => { setShowMenu(false); setShowWallpaperSheet(true); } },
     { label: 'More',                action: () => { setShowMenu(false); showComingSoon(); } },
   ];
 
@@ -777,8 +840,43 @@ export default function ChatScreen() {
         </View>
       )}
 
+      {/* ── Search bar ── */}
+      {searchVisible && (
+        <View style={[styles.searchBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <TouchableOpacity onPress={closeSearch}>
+            <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <TextInput
+            ref={searchRef}
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+            placeholder="Search messages…"
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={(t) => { setSearchQuery(t); setSearchMatchIndex(0); }}
+            returnKeyType="search"
+          />
+          {searchMatches.length > 0 && (
+            <Text style={[textStyles.caption, { color: colors.textSecondary, minWidth: 40, textAlign: 'right' }]}>
+              {searchMatchIndex + 1}/{searchMatches.length}
+            </Text>
+          )}
+          <TouchableOpacity
+            disabled={searchMatches.length === 0}
+            onPress={() => setSearchMatchIndex((i) => (i > 0 ? i - 1 : searchMatches.length - 1))}
+          >
+            <Ionicons name="chevron-up" size={22} color={searchMatches.length > 0 ? colors.primary : colors.border} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={searchMatches.length === 0}
+            onPress={() => setSearchMatchIndex((i) => (i < searchMatches.length - 1 ? i + 1 : 0))}
+          >
+            <Ionicons name="chevron-down" size={22} color={searchMatches.length > 0 ? colors.primary : colors.border} />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* ── Body: background + messages + input ── */}
-      <ChatBackground>
+      <ChatBackground bgColor={wallpaperColor}>
       {/* ── Message list ── */}
       <FlatList
         ref={listRef}
@@ -898,6 +996,48 @@ export default function ChatScreen() {
           ))}
         </View>
       </Modal>
+
+      {/* ── Mute sheet ── */}
+      <Modal visible={showMuteSheet} transparent animationType="slide" onRequestClose={() => setShowMuteSheet(false)}>
+        <Pressable style={styles.overlay} onPress={() => setShowMuteSheet(false)} />
+        <View style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 16 }]}>
+          <Text style={[textStyles.subtitle, { color: colors.textPrimary, marginBottom: spacing.md }]}>Mute notifications</Text>
+          {[
+            { label: 'Mute for 8 hours', ms: 8 * 60 * 60 * 1000 },
+            { label: 'Mute for 1 week', ms: 7 * 24 * 60 * 60 * 1000 },
+            { label: 'Always mute', ms: null },
+          ].map((opt, i) => (
+            <TouchableOpacity
+              key={opt.label}
+              style={[styles.menuItem, { borderTopColor: colors.border, borderTopWidth: i === 0 ? 0 : StyleSheet.hairlineWidth }]}
+              onPress={() => handleMute(opt.ms)}
+            >
+              <Text style={[textStyles.body, { color: colors.textPrimary }]}>{opt.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
+
+      {/* ── Wallpaper sheet ── */}
+      <Modal visible={showWallpaperSheet} transparent animationType="slide" onRequestClose={() => setShowWallpaperSheet(false)}>
+        <Pressable style={styles.overlay} onPress={() => setShowWallpaperSheet(false)} />
+        <View style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 16 }]}>
+          <Text style={[textStyles.subtitle, { color: colors.textPrimary, marginBottom: spacing.lg }]}>Chat wallpaper</Text>
+          <View style={styles.wallpaperGrid}>
+            {WALLPAPER_COLORS.map((c) => (
+              <TouchableOpacity
+                key={c}
+                style={[
+                  styles.wallpaperSwatch,
+                  { backgroundColor: c, borderColor: wallpaperColor === c ? colors.primary : colors.border },
+                  wallpaperColor === c && styles.wallpaperSwatchActive,
+                ]}
+                onPress={() => handleWallpaper(c)}
+              />
+            ))}
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -951,6 +1091,17 @@ const styles = StyleSheet.create({
   attachItem: { alignItems: 'center', width: 72 },
   attachIcon: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   menuItem: { paddingVertical: 16 },
+
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14, paddingVertical: 4 },
+
+  wallpaperGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-start' },
+  wallpaperSwatch: { width: 64, height: 64, borderRadius: 12, borderWidth: 2 },
+  wallpaperSwatchActive: { borderWidth: 3 },
 });
 
 const bubbleStyles = StyleSheet.create({

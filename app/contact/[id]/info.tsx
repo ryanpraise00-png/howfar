@@ -156,7 +156,7 @@ export default function ContactInfoScreen() {
             icon="images-outline"
             iconBg="#FF9500"
             colors={colors}
-            onPress={() => router.push(`/chat/${id}`)}
+            onPress={() => router.push(`/chat/${id}/media`)}
           />
         </View>
 

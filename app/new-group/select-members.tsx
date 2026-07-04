@@ -10,13 +10,14 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { Avatar } from '@/src/components';
 import { mockContacts, type Contact } from '@/src/data/mockContacts';
-import { searchUsers, type ApiUser } from '@/src/services/chats';
+import { searchUsers, addChatMembers, type ApiUser } from '@/src/services/chats';
+import { showError, showSuccess } from '@/src/lib/toast';
 
 function buildSections(contacts: (Contact | ApiUser)[]) {
   const map = new Map<string, (Contact | ApiUser)[]>();
@@ -35,10 +36,13 @@ type SelectableUser = Contact | ApiUser;
 export default function SelectMembersScreen() {
   const { colors, textStyles, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  const { chatId, mode } = useLocalSearchParams<{ chatId?: string; mode?: string }>();
+  const isAddMode = mode === 'add' && !!chatId;
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<SelectableUser[]>([]);
   const [apiResults, setApiResults] = useState<ApiUser[]>([]);
   const [searching, setSearching] = useState(false);
+  const [adding, setAdding] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -71,8 +75,21 @@ export default function SelectMembersScreen() {
 
   const isSelected = (id: string) => selected.some((c) => c.id === id);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (selected.length === 0) return;
+    if (isAddMode) {
+      setAdding(true);
+      try {
+        await addChatMembers(chatId!, selected.map((c) => c.id));
+        showSuccess(`Added ${selected.length} participant${selected.length > 1 ? 's' : ''}`);
+        router.back();
+      } catch {
+        showError('Could not add participants');
+      } finally {
+        setAdding(false);
+      }
+      return;
+    }
     const ids = selected.map((c) => c.id).join(',');
     router.push(`/new-group/group-details?members=${ids}`);
   };
@@ -85,7 +102,7 @@ export default function SelectMembersScreen() {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>New Group</Text>
+          <Text style={styles.headerTitle}>{isAddMode ? 'Add Participants' : 'New Group'}</Text>
           <Text style={styles.headerSub}>
             {selected.length === 0
               ? 'Add participants'
@@ -96,8 +113,12 @@ export default function SelectMembersScreen() {
           <TouchableOpacity
             style={[styles.nextBtn, { backgroundColor: colors.accentAmber }]}
             onPress={handleNext}
+            disabled={adding}
           >
-            <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+            {adding
+              ? <ActivityIndicator size="small" color="#FFFFFF" />
+              : <Ionicons name={isAddMode ? 'checkmark' : 'arrow-forward'} size={22} color="#FFFFFF" />
+            }
           </TouchableOpacity>
         )}
       </View>

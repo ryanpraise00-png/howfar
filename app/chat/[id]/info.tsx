@@ -8,6 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { showComingSoon } from '@/src/lib/toast';
+import { addChatMembers } from '@/src/services/chats';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -153,7 +154,7 @@ export default function GroupInfoScreen() {
         {/* ── Media row ── */}
         <TouchableOpacity
           style={[styles.card, styles.mediaCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => showComingSoon('Media, links & docs')}
+          onPress={() => router.push(`/chat/${id}/media`)}
         >
           <View style={styles.mediaThumbs}>
             {[1, 2, 3].map((i) => (
@@ -178,7 +179,7 @@ export default function GroupInfoScreen() {
           {/* Add participants */}
           <TouchableOpacity
             style={[styles.addRow, { borderBottomColor: colors.border }]}
-            onPress={() => showComingSoon('Add participants')}
+            onPress={() => router.push(`/new-group/select-members?chatId=${id}&mode=add`)}
           >
             <View style={[styles.addIcon, { backgroundColor: colors.primary + '18' }]}>
               <Ionicons name="person-add" size={20} color={colors.primary} />

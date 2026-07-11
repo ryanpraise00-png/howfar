@@ -10,9 +10,39 @@ export interface ChatItem {
   isGroup: boolean;
   isFavorite: boolean;
   isArchived: boolean;
+  type?: 'vault' | 'xen';
+  updatedAt?: number;
 }
 
 export const mockChats: ChatItem[] = [
+  {
+    id: 'xen',
+    name: 'Xen',
+    lastMessage: 'AI Assistant · Xensiq',
+    timestamp: 'Now',
+    unreadCount: 0,
+    isPinned: false,
+    isMuted: false,
+    isGroup: false,
+    isFavorite: false,
+    isArchived: false,
+    type: 'xen',
+    updatedAt: Date.now(),
+  },
+  {
+    id: 'vault',
+    name: 'Vault',
+    lastMessage: 'Your private space',
+    timestamp: 'Now',
+    unreadCount: 0,
+    isPinned: false,
+    isMuted: false,
+    isGroup: false,
+    isFavorite: false,
+    isArchived: false,
+    type: 'vault',
+    updatedAt: Date.now() - 1000,
+  },
   {
     id: 'ch1',
     name: 'Amara Osei',

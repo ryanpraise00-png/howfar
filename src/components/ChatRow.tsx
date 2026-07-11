@@ -14,6 +14,7 @@ interface ChatRowProps {
   isPinned?: boolean;
   isMuted?: boolean;
   isGroup?: boolean;
+  avatarType?: 'vault' | 'xen';
   onPress: () => void;
   colors?: AppColors;
 }
@@ -27,6 +28,7 @@ export function ChatRow({
   isPinned = false,
   isMuted = false,
   isGroup = false,
+  avatarType,
   onPress,
   colors = lightColors,
 }: ChatRowProps) {
@@ -34,13 +36,13 @@ export function ChatRow({
 
   return (
     <TouchableOpacity style={[styles.row, { backgroundColor: colors.surface }]} onPress={onPress} activeOpacity={0.7}>
-      <Avatar uri={avatarUri} name={name} size="md" isGroup={isGroup} />
+      <Avatar uri={avatarUri} name={name} size="md" isGroup={isGroup} type={avatarType} />
       <View style={styles.body}>
         <View style={styles.topRow}>
           <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1}>
             {name}
           </Text>
-          <Text style={[styles.time, { color: hasUnread ? colors.primary : colors.textSecondary }]}>
+          <Text style={[styles.time, { color: hasUnread ? '#3D5AFE' : '#8892B0' }]}>
             {timestamp}
           </Text>
         </View>
@@ -52,8 +54,8 @@ export function ChatRow({
             {lastMessage}
           </Text>
           <View style={styles.meta}>
-            {isMuted && <Ionicons name="volume-mute" size={14} color={colors.textSecondary} />}
-            {isPinned && !hasUnread && <Ionicons name="pin" size={14} color={colors.textSecondary} />}
+            {isMuted  && <Ionicons name="volume-mute" size={13} color={colors.textSecondary} />}
+            {isPinned && !hasUnread && <Ionicons name="pin" size={13} color="#F2A93B" />}
             {hasUnread ? <Badge count={unreadCount} /> : null}
           </View>
         </View>
@@ -73,8 +75,8 @@ const styles = StyleSheet.create({
   body: { flex: 1, gap: 3 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   bottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  name: { fontFamily: 'Sora_600SemiBold', fontSize: 15, flex: 1, marginRight: 8 },
-  time: { fontFamily: 'Inter_400Regular', fontSize: 12 },
+  name:    { fontFamily: 'Sora_600SemiBold', fontSize: 15, flex: 1, marginRight: 8 },
+  time:    { fontFamily: 'Inter_400Regular', fontSize: 12 },
   preview: { fontFamily: 'Inter_400Regular', fontSize: 13, flex: 1, marginRight: 6 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  meta:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

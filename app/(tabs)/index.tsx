@@ -7,13 +7,11 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  Platform,
   Modal,
   RefreshControl,
   Animated,
   Easing,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,10 +21,6 @@ import { IconButton } from '@/src/components';
 import { SwipeableChatRow } from '@/src/components/SwipeableChatRow';
 import { getActiveChats, getArchivedChats, type ChatItem } from '@/src/data/mockChats';
 import { fetchChats, apiChatToItem, updateChatSettings, deleteChat } from '@/src/services/chats';
-import { showComingSoon } from '@/src/lib/toast';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const xenAvatar = require('@/assets/images/xen-avatar.png');
 
 type FilterKey = 'All' | 'Unread' | 'Favorites' | 'Groups';
 const FILTERS: FilterKey[] = ['All', 'Unread', 'Favorites', 'Groups'];
@@ -94,16 +88,6 @@ function PulsingDot({ color, size, absolute = false }: { color: string; size: nu
       },
       absolute && { position: 'absolute', bottom: 0, right: 0 },
     ]} />
-  );
-}
-
-// ── Section header with ruled line ─────────────────────────────────────────
-function SectionHeader({ label, surface }: { label: string; surface: string }) {
-  return (
-    <View style={[sectionStyles.row, { backgroundColor: surface }]}>
-      <Text style={sectionStyles.label}>{label}</Text>
-      <View style={sectionStyles.line} />
-    </View>
   );
 }
 
@@ -201,14 +185,17 @@ export default function ChatsScreen() {
 
   const filtered = useMemo(() => {
     let list = chats;
-    if (filter === 'Unread')    list = list.filter((c) => c.unreadCount > 0);
-    else if (filter === 'Favorites') list = list.filter((c) => c.isFavorite);
-    else if (filter === 'Groups')    list = list.filter((c) => c.isGroup);
+    if (filter === 'Unread')         list = list.filter((c) => c.unreadCount > 0 && !c.type);
+    else if (filter === 'Favorites') list = list.filter((c) => c.isFavorite && !c.type);
+    else if (filter === 'Groups')    list = list.filter((c) => c.isGroup && !c.type);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q));
     }
-    return [...list].sort((a, b) => Number(b.isPinned) - Number(a.isPinned));
+    return [...list].sort((a, b) => {
+      if (a.isPinned !== b.isPinned) return Number(b.isPinned) - Number(a.isPinned);
+      return (b.updatedAt ?? 0) - (a.updatedAt ?? 0);
+    });
   }, [chats, filter, query]);
 
   const handleArchive = useCallback(async (id: string) => {
@@ -239,18 +226,21 @@ export default function ChatsScreen() {
     setRefreshing(false);
   }, []);
 
-  const renderItem = useCallback(({ item, index }: { item: ChatItem; index: number }) => (
-    <AnimatedChatRow
-      index={index}
-      chat={item}
-      colors={colors}
-      onPress={() => router.push(`/chat/${item.id}`)}
-      onArchive={handleArchive}
-      onPin={handlePin}
-      onMute={handleMute}
-      onDelete={handleDelete}
-    />
-  ), [colors, handleArchive, handlePin, handleMute, handleDelete]);
+  const renderItem = useCallback(({ item, index }: { item: ChatItem; index: number }) => {
+    const dest = item.type === 'vault' ? '/vault' : item.type === 'xen' ? '/xen' : `/chat/${item.id}`;
+    return (
+      <AnimatedChatRow
+        index={index}
+        chat={item}
+        colors={colors}
+        onPress={() => router.push(dest as any)}
+        onArchive={handleArchive}
+        onPin={handlePin}
+        onMute={handleMute}
+        onDelete={handleDelete}
+      />
+    );
+  }, [colors, handleArchive, handlePin, handleMute, handleDelete]);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -323,57 +313,19 @@ export default function ChatsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           ListHeaderComponent={
-            <>
-              {/* Pinned section */}
-              <SectionHeader label="Pinned" surface={colors.surface} />
-
-              {/* Vault row */}
+            archivedCount > 0 ? (
               <Pressable
-                style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                onPress={() => router.push('/vault')}
+                style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                onPress={() => router.push('/archived')}
               >
-                <View style={[styles.systemAvatar, { backgroundColor: '#0B9E8E' }]}>
-                  <Ionicons name="shield-checkmark" size={22} color="#FFFFFF" />
+                <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
+                  <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
                 </View>
-                <View style={styles.systemMid}>
-                  <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Vault</Text>
-                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>Your private notes</Text>
-                </View>
-                <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
+                <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
+                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
               </Pressable>
-
-              {/* Xen row */}
-              <Pressable
-                style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                onPress={() => router.push('/xen')}
-              >
-                <View style={{ position: 'relative' }}>
-                  <Image source={xenAvatar} style={styles.systemAvatar} contentFit="cover" />
-                  <PulsingDot color="#F2A93B" size={6} absolute />
-                </View>
-                <View style={styles.systemMid}>
-                  <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Xen</Text>
-                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>AI Assistant · Xensiq</Text>
-                </View>
-              </Pressable>
-
-              {/* All chats section */}
-              <SectionHeader label="All chats" surface={colors.surface} />
-
-              {archivedCount > 0 && (
-                <Pressable
-                  style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                  onPress={() => router.push('/archived')}
-                >
-                  <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
-                    <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
-                  </View>
-                  <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
-                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
-                  <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-                </Pressable>
-              )}
-            </>
+            ) : null
           }
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -469,17 +421,6 @@ const styles = StyleSheet.create({
 
   loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  systemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  systemAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
-  systemMid: { flex: 1 },
-
   archivedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -507,12 +448,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-});
-
-const sectionStyles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, gap: 10 },
-  label: { fontFamily: 'Sora_700Bold', fontSize: 13, color: '#3D5AFE', letterSpacing: 0.3 },
-  line: { flex: 1, height: 1, backgroundColor: '#3D5AFE', opacity: 0.2 },
 });
 
 const loaderStyles = StyleSheet.create({

@@ -1,36 +1,44 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { lightColors } from '@/src/theme';
 
-const SIZES = { sm: 32, md: 44, lg: 56 } as const;
-const FONT_SIZES = { sm: 12, md: 16, lg: 20 } as const;
-const DOT_SIZES = { sm: 8, md: 10, lg: 12 } as const;
+const SIZES = { sm: 32, md: 44, lg: 56, xl: 72 } as const;
+const ICON_SIZES = { sm: 16, md: 22, lg: 28, xl: 36 } as const;
+const DOT_SIZES = { sm: 8, md: 10, lg: 12, xl: 14 } as const;
+
+type AvatarType = 'user' | 'group' | 'xen' | 'vault';
+
+const TYPE_CONFIG: Record<AvatarType, { bg: string; icon: React.ComponentProps<typeof Ionicons>['name']; iconColor: string }> = {
+  user:  { bg: '#14213D', icon: 'person',           iconColor: '#FFFFFF' },
+  group: { bg: '#3D5AFE', icon: 'people',            iconColor: '#FFFFFF' },
+  xen:   { bg: '#0B5E5C', icon: 'flash',             iconColor: '#F2A93B' },
+  vault: { bg: '#14213D', icon: 'shield-checkmark',  iconColor: '#FFFFFF' },
+};
 
 interface AvatarProps {
   uri?: string;
   name: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   onlineIndicator?: boolean;
+  type?: AvatarType;
+  isGroup?: boolean;
 }
 
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function hashColor(name: string) {
-  const palette = ['#14213D', '#3D5AFE', '#5856D6', '#AF52DE', '#FF6B35', '#2C7BB2'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return palette[Math.abs(hash) % palette.length];
-}
-
-export function Avatar({ uri, name, size = 'md', onlineIndicator = false }: AvatarProps) {
+export function Avatar({
+  uri,
+  name,
+  size = 'md',
+  onlineIndicator = false,
+  type,
+  isGroup = false,
+}: AvatarProps) {
   const dim = SIZES[size];
-  const fontSize = FONT_SIZES[size];
+  const iconSize = ICON_SIZES[size];
   const dotSize = DOT_SIZES[size];
-  const bg = hashColor(name);
+
+  const resolvedType: AvatarType = type ?? (isGroup ? 'group' : 'user');
+  const { bg, icon, iconColor } = TYPE_CONFIG[resolvedType];
 
   return (
     <View style={{ width: dim, height: dim }}>
@@ -43,20 +51,14 @@ export function Avatar({ uri, name, size = 'md', onlineIndicator = false }: Avat
         />
       ) : (
         <View style={[styles.base, styles.fallback, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
-          <Text style={[styles.initials, { fontSize }]}>{getInitials(name)}</Text>
+          <Ionicons name={icon} size={iconSize} color={iconColor} />
         </View>
       )}
       {onlineIndicator && (
         <View
           style={[
             styles.dot,
-            {
-              width: dotSize,
-              height: dotSize,
-              borderRadius: dotSize / 2,
-              bottom: 0,
-              right: 0,
-            },
+            { width: dotSize, height: dotSize, borderRadius: dotSize / 2, bottom: 0, right: 0 },
           ]}
         />
       )}
@@ -67,7 +69,6 @@ export function Avatar({ uri, name, size = 'md', onlineIndicator = false }: Avat
 const styles = StyleSheet.create({
   base: { overflow: 'hidden' },
   fallback: { alignItems: 'center', justifyContent: 'center' },
-  initials: { color: '#FFFFFF', fontFamily: 'Sora_700Bold' },
   dot: {
     position: 'absolute',
     backgroundColor: lightColors.success,

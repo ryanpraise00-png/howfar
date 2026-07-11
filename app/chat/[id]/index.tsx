@@ -799,7 +799,7 @@ export default function ChatScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={isGroup ? () => router.push(`/chat/${chatId}/info`) : undefined}>
-              <Avatar name={chatName} size="sm" />
+              <Avatar name={chatName} size="sm" isGroup={isGroup} />
             </TouchableOpacity>
           )}
 

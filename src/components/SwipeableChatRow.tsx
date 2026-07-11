@@ -101,6 +101,7 @@ export function SwipeableChatRow({ chat, colors, onPress, onArchive, archiveLabe
         unreadCount={chat.unreadCount}
         isPinned={chat.isPinned}
         isMuted={chat.isMuted}
+        isGroup={chat.isGroup}
         onPress={onPress}
         colors={colors}
       />

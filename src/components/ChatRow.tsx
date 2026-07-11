@@ -13,6 +13,7 @@ interface ChatRowProps {
   unreadCount?: number;
   isPinned?: boolean;
   isMuted?: boolean;
+  isGroup?: boolean;
   onPress: () => void;
   colors?: AppColors;
 }
@@ -25,6 +26,7 @@ export function ChatRow({
   unreadCount = 0,
   isPinned = false,
   isMuted = false,
+  isGroup = false,
   onPress,
   colors = lightColors,
 }: ChatRowProps) {
@@ -32,7 +34,7 @@ export function ChatRow({
 
   return (
     <TouchableOpacity style={[styles.row, { backgroundColor: colors.surface }]} onPress={onPress} activeOpacity={0.7}>
-      <Avatar uri={avatarUri} name={name} size="md" />
+      <Avatar uri={avatarUri} name={name} size="md" isGroup={isGroup} />
       <View style={styles.body}>
         <View style={styles.topRow}>
           <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1}>

@@ -16,6 +16,8 @@ export default function AccountScreen() {
       <ScreenHeader title="Account" variant="teal" colors={colors} />
       <SettingsRow label="Phone number" value={`${countryCode} ${phone}`} showChevron={false} colors={colors} onPress={() => showComingSoon('Change number')} />
       <SettingsRow label="Change number" icon="phone-portrait-outline" iconBg="#5856D6" colors={colors} onPress={() => showComingSoon('Change number')} />
+      <SettingsRow label="QR Code" icon="qr-code-outline" iconBg="#14213D" colors={colors} onPress={() => router.push('/qr')} />
+      <SettingsRow label="Connected devices" icon="phone-portrait-outline" iconBg="#3D5AFE" colors={colors} onPress={() => router.push('/devices')} />
       <SettingsRow label="Delete account" icon="trash-outline" danger colors={colors} showChevron={false}
         onPress={() => Alert.alert('Delete account?', 'This will permanently delete your account and data.', [
           { text: 'Cancel', style: 'cancel' },

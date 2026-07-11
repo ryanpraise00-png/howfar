@@ -6,6 +6,25 @@ import { prisma } from '../lib/prisma';
 export async function messageRoutes(app: FastifyInstance) {
   app.addHook('preHandler', requireAuth);
 
+  // GET /api/messages/starred — list all starred messages for the current user
+  app.get('/starred', async (req, reply) => {
+    const userId = req.user.sub;
+
+    const messages = await prisma.message.findMany({
+      where: {
+        isStarred: true,
+        chat: { members: { some: { userId } } },
+      },
+      include: {
+        chat: { select: { id: true, name: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    return reply.send(messages);
+  });
+
   // PATCH /api/messages/:id/star — toggle star
   app.patch('/:id/star', async (req, reply) => {
     const { id } = req.params as { id: string };

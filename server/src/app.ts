@@ -15,6 +15,7 @@ import { statusRoutes } from './routes/status';
 import { xenRoutes } from './routes/xen';
 import { callRoutes } from './routes/calls';
 import { messageRoutes } from './routes/messages';
+import { circleRoutes } from './routes/circles';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -23,7 +24,7 @@ function buildCorsOrigin(): string[] | true {
   if (!isProd) return true as any;
   const origins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
-    .map((o) => o.trim())
+    .map((o: string) => o.trim())
     .filter(Boolean);
   return origins.length ? origins : ['https://howfar.app'];
 }
@@ -95,6 +96,7 @@ export async function buildApp() {
   await app.register(xenRoutes,    { prefix: '/xen' });
   await app.register(callRoutes,    { prefix: '/api/calls' });
   await app.register(messageRoutes, { prefix: '/api/messages' });
+  await app.register(circleRoutes,  { prefix: '/api/circles' });
 
   return app;
 }

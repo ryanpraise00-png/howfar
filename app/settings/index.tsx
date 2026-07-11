@@ -1,5 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { showComingSoon } from '@/src/lib/toast';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -70,7 +69,7 @@ export default function SettingsScreen() {
                 if (row.route) {
                   router.push(row.route as any);
                 } else {
-                  showComingSoon('Invite a Friend');
+                  Share.share({ message: 'Join me on HowFar — the fast, private messenger. Download at https://howfar.app', title: 'Join me on HowFar' });
                 }
               }}
             />

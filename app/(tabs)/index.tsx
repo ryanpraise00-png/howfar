@@ -295,7 +295,7 @@ export default function ChatsScreen() {
         <View style={[overflowStyles.menu, { backgroundColor: colors.surface }]}>
           {[
             { label: 'New group',  action: () => { setShowOverflow(false); router.push('/new-group/select-members'); } },
-            { label: 'Starred messages', action: () => { setShowOverflow(false); showComingSoon('Starred messages'); } },
+            { label: 'Starred messages', action: () => { setShowOverflow(false); router.push('/starred'); } },
             { label: 'Settings',   action: () => { setShowOverflow(false); router.push('/settings'); } },
           ].map((item) => (
             <TouchableOpacity key={item.label} style={[overflowStyles.item, { borderBottomColor: colors.border }]} onPress={item.action}>

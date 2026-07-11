@@ -2,6 +2,7 @@ import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { lightColors } from '@/src/theme';
+import { getAvatarColor } from '@/src/utils/avatarColor';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const xenAvatar = require('@/assets/images/xen-avatar.png');
@@ -12,8 +13,7 @@ const DOT_SIZES = { sm: 8, md: 10, lg: 12, xl: 14 } as const;
 
 type AvatarType = 'user' | 'group' | 'xen' | 'vault';
 
-const TYPE_CONFIG: Record<Exclude<AvatarType, 'xen'>, { bg: string; icon: React.ComponentProps<typeof Ionicons>['name']; iconColor: string }> = {
-  user:  { bg: '#14213D', icon: 'person',          iconColor: '#FFFFFF' },
+const FIXED_CONFIGS: Record<Exclude<AvatarType, 'user' | 'xen'>, { bg: string; icon: React.ComponentProps<typeof Ionicons>['name']; iconColor: string }> = {
   group: { bg: '#3D5AFE', icon: 'people',           iconColor: '#FFFFFF' },
   vault: { bg: '#14213D', icon: 'shield-checkmark', iconColor: '#FFFFFF' },
 };
@@ -38,7 +38,6 @@ export function Avatar({
   const dim = SIZES[size];
   const iconSize = ICON_SIZES[size];
   const dotSize = DOT_SIZES[size];
-
   const resolvedType: AvatarType = type ?? (isGroup ? 'group' : 'user');
 
   function renderFallback() {
@@ -52,7 +51,14 @@ export function Avatar({
         />
       );
     }
-    const { bg, icon, iconColor } = TYPE_CONFIG[resolvedType];
+    if (resolvedType === 'user') {
+      return (
+        <View style={[styles.base, styles.fallback, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: getAvatarColor(name) }]}>
+          <Ionicons name="person" size={iconSize} color="#FFFFFF" />
+        </View>
+      );
+    }
+    const { bg, icon, iconColor } = FIXED_CONFIGS[resolvedType];
     return (
       <View style={[styles.base, styles.fallback, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
         <Ionicons name={icon} size={iconSize} color={iconColor} />

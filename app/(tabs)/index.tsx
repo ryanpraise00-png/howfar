@@ -10,14 +10,12 @@ import {
   Platform,
   Modal,
   RefreshControl,
+  Animated,
+  Easing,
 } from 'react-native';
-import { showComingSoon } from '@/src/lib/toast';
 import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const xenAvatar = require('@/assets/images/xen-avatar.png');
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
@@ -25,22 +23,155 @@ import { IconButton } from '@/src/components';
 import { SwipeableChatRow } from '@/src/components/SwipeableChatRow';
 import { getActiveChats, getArchivedChats, type ChatItem } from '@/src/data/mockChats';
 import { fetchChats, apiChatToItem, updateChatSettings, deleteChat } from '@/src/services/chats';
+import { showComingSoon } from '@/src/lib/toast';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const xenAvatar = require('@/assets/images/xen-avatar.png');
 
 type FilterKey = 'All' | 'Unread' | 'Favorites' | 'Groups';
 const FILTERS: FilterKey[] = ['All', 'Unread', 'Favorites', 'Groups'];
 
+// ── Branded three-dot loader ────────────────────────────────────────────────
+function BrandedLoader() {
+  const s0 = useRef(new Animated.Value(1)).current;
+  const s1 = useRef(new Animated.Value(1)).current;
+  const s2 = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    function bounce(s: Animated.Value, delay: number) {
+      const rest = 600 - delay;
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(s, { toValue: 1.55, duration: 150, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
+          Animated.timing(s, { toValue: 1.0,  duration: 150, useNativeDriver: true, easing: Easing.in(Easing.ease) }),
+          Animated.delay(rest),
+        ])
+      );
+    }
+    const anim = Animated.parallel([bounce(s0, 0), bounce(s1, 150), bounce(s2, 300)]);
+    anim.start();
+    return () => anim.stop();
+  }, []);
+
+  const DOT_BG = ['#14213D', '#3D5AFE', '#F2A93B'];
+  return (
+    <View style={loaderStyles.row}>
+      {([s0, s1, s2] as Animated.Value[]).map((s, i) => (
+        <Animated.View key={i} style={[loaderStyles.dot, { backgroundColor: DOT_BG[i], transform: [{ scale: s }] }]} />
+      ))}
+    </View>
+  );
+}
+
+// ── Pulsing status dot ──────────────────────────────────────────────────────
+function PulsingDot({ color, size, absolute = false }: { color: string; size: number; absolute?: boolean }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(scale,   { toValue: 1.4, duration: 1000, useNativeDriver: true }),
+          Animated.timing(scale,   { toValue: 1.0, duration: 1000, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.timing(opacity, { toValue: 0,   duration: 1000, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 1.0, duration: 1000, useNativeDriver: true }),
+        ]),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View style={[
+      {
+        width: size, height: size, borderRadius: size / 2,
+        backgroundColor: color,
+        borderWidth: 1.5, borderColor: '#FFFFFF',
+        transform: [{ scale }], opacity,
+      },
+      absolute && { position: 'absolute', bottom: 0, right: 0 },
+    ]} />
+  );
+}
+
+// ── Section header with ruled line ─────────────────────────────────────────
+function SectionHeader({ label, surface }: { label: string; surface: string }) {
+  return (
+    <View style={[sectionStyles.row, { backgroundColor: surface }]}>
+      <Text style={sectionStyles.label}>{label}</Text>
+      <View style={sectionStyles.line} />
+    </View>
+  );
+}
+
+// ── Animated entrance wrapper per chat row ─────────────────────────────────
+interface AnimRowProps {
+  index: number;
+  chat: ChatItem;
+  colors: any;
+  onPress: () => void;
+  onArchive: (id: string) => void;
+  onPin?: (id: string) => void;
+  onMute?: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+function AnimatedChatRow({ index, chat, colors, onPress, onArchive, onPin, onMute, onDelete }: AnimRowProps) {
+  const opacity    = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    const delay = Math.min(index, 12) * 60;
+    Animated.parallel([
+      Animated.timing(opacity,    { toValue: 1, duration: 300, delay, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
+      Animated.timing(translateY, { toValue: 0, duration: 300, delay, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      <SwipeableChatRow
+        chat={chat}
+        colors={colors}
+        onPress={onPress}
+        onArchive={onArchive}
+        onPin={onPin}
+        onMute={onMute}
+        onDelete={onDelete}
+      />
+    </Animated.View>
+  );
+}
+
+// ── Main screen ─────────────────────────────────────────────────────────────
 export default function ChatsScreen() {
   const { colors, textStyles, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [chats, setChats] = useState<ChatItem[]>(getActiveChats);
+  const [chats, setChats]           = useState<ChatItem[]>(getActiveChats);
   const [archivedChats, setArchivedChats] = useState<ChatItem[]>(getArchivedChats);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading]       = useState(true);
   const [showOverflow, setShowOverflow] = useState(false);
+  const [filter, setFilter]         = useState<FilterKey>('All');
+  const [searching, setSearching]   = useState(false);
+  const [query, setQuery]           = useState('');
+  const searchRef = useRef<TextInput>(null);
 
-  // Load from API on mount; fall back to mock data if unreachable
+  // Chip scale animations
+  const chipScales = useRef(
+    Object.fromEntries(FILTERS.map((f) => [f, new Animated.Value(1)])) as Record<FilterKey, Animated.Value>
+  ).current;
+
+  // FAB rotation animation
+  const fabSpin = useRef(new Animated.Value(0)).current;
+  const fabRotate = fabSpin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] });
+
   useEffect(() => {
-    loadChats();
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    loadChats().finally(() => { clearTimeout(timeout); setLoading(false); });
   }, []);
 
   async function loadChats() {
@@ -52,39 +183,37 @@ export default function ChatsScreen() {
       // server not running — keep mock data
     }
   }
-  const [filter, setFilter] = useState<FilterKey>('All');
-  const [searching, setSearching] = useState(false);
-  const [query, setQuery] = useState('');
-  const searchRef = useRef<TextInput>(null);
+
+  function selectFilter(f: FilterKey) {
+    Animated.spring(chipScales[f], { toValue: 1.05, useNativeDriver: true, friction: 6 }).start(() =>
+      Animated.spring(chipScales[f], { toValue: 1, useNativeDriver: true, friction: 6 }).start()
+    );
+    setFilter(f);
+  }
+
+  function handleFabPress() {
+    Animated.spring(fabSpin, { toValue: 1, useNativeDriver: true, friction: 4, tension: 100 }).start(() => {
+      fabSpin.setValue(0);
+      router.push('/new-chat');
+    });
+  }
 
   const archivedCount = archivedChats.length;
 
   const filtered = useMemo(() => {
     let list = chats;
-    if (filter === 'Unread') list = list.filter((c) => c.unreadCount > 0);
+    if (filter === 'Unread')    list = list.filter((c) => c.unreadCount > 0);
     else if (filter === 'Favorites') list = list.filter((c) => c.isFavorite);
-    else if (filter === 'Groups') list = list.filter((c) => c.isGroup);
+    else if (filter === 'Groups')    list = list.filter((c) => c.isGroup);
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.lastMessage.toLowerCase().includes(q)
-      );
+      list = list.filter((c) => c.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q));
     }
-    // Pinned chats always float to top
     return [...list].sort((a, b) => Number(b.isPinned) - Number(a.isPinned));
   }, [chats, filter, query]);
 
-  const openSearch = () => {
-    setSearching(true);
-    setTimeout(() => searchRef.current?.focus(), 50);
-  };
-
-  const closeSearch = () => {
-    setSearching(false);
-    setQuery('');
-  };
+  const openSearch  = () => { setSearching(true); setTimeout(() => searchRef.current?.focus(), 50); };
+  const closeSearch = () => { setSearching(false); setQuery(''); };
 
   const handleArchive = useCallback(async (id: string) => {
     setChats((prev) => prev.filter((c) => c.id !== id));
@@ -114,8 +243,11 @@ export default function ChatsScreen() {
     setRefreshing(false);
   }, []);
 
-  const renderItem = useCallback(({ item }: { item: ChatItem }) => (
-    <SwipeableChatRow
+  const totalUnread = chats.reduce((n, c) => n + (c.unreadCount > 0 ? 1 : 0), 0);
+
+  const renderItem = useCallback(({ item, index }: { item: ChatItem; index: number }) => (
+    <AnimatedChatRow
+      index={index}
       chat={item}
       colors={colors}
       onPress={() => router.push(`/chat/${item.id}`)}
@@ -126,12 +258,15 @@ export default function ChatsScreen() {
     />
   ), [colors, handleArchive, handlePin, handleMute, handleDelete]);
 
-  const totalUnread = chats.reduce((n, c) => n + (c.unreadCount > 0 ? 1 : 0), 0);
-
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+
       {/* ── Header ── */}
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        {/* gradient layer: subtle highlight at top */}
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
+
         <View style={styles.headerInner}>
           {searching ? (
             <>
@@ -151,31 +286,19 @@ export default function ChatsScreen() {
             </>
           ) : (
             <>
-              <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>HowFar</Text>
+              <View style={styles.headerTitleRow}>
+                <Text style={styles.headerTitle}>HowFar</Text>
+                <PulsingDot color="#4ADE80" size={8} />
+              </View>
               <View style={styles.headerActions}>
                 {totalUnread > 0 && (
                   <View style={[styles.unreadPill, { backgroundColor: colors.accentAmber }]}>
                     <Text style={styles.unreadPillText}>{totalUnread}</Text>
                   </View>
                 )}
-                <IconButton
-                  name="camera-outline"
-                  color="#FFFFFF"
-                  onPress={() => router.push('/camera')}
-                  accessibilityLabel="Open camera"
-                />
-                <IconButton
-                  name="search-outline"
-                  color="#FFFFFF"
-                  onPress={openSearch}
-                  accessibilityLabel="Search chats"
-                />
-                <IconButton
-                  name="ellipsis-vertical"
-                  color="#FFFFFF"
-                  onPress={() => setShowOverflow(true)}
-                  accessibilityLabel="More options"
-                />
+                <IconButton name="camera-outline" color="#FFFFFF" onPress={() => router.push('/camera')} accessibilityLabel="Open camera" />
+                <IconButton name="search-outline"  color="#FFFFFF" onPress={openSearch}                  accessibilityLabel="Search chats" />
+                <IconButton name="ellipsis-vertical" color="#FFFFFF" onPress={() => setShowOverflow(true)} accessibilityLabel="More options" />
               </View>
             </>
           )}
@@ -188,117 +311,106 @@ export default function ChatsScreen() {
           {FILTERS.map((f) => {
             const active = filter === f;
             return (
-              <TouchableOpacity
-                key={f}
-                style={[
-                  styles.chip,
-                  active
-                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                    : { backgroundColor: 'transparent', borderColor: colors.border },
-                ]}
-                onPress={() => setFilter(f)}
-              >
-                <Text
-                  style={[
-                    textStyles.label,
-                    { color: active ? '#FFFFFF' : colors.textSecondary },
-                  ]}
+              <Animated.View key={f} style={{ transform: [{ scale: chipScales[f] }] }}>
+                <TouchableOpacity
+                  style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
+                  onPress={() => selectFilter(f)}
+                  activeOpacity={0.8}
                 >
-                  {f}
-                </Text>
-              </TouchableOpacity>
+                  <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>{f}</Text>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })}
         </ScrollView>
       </View>
 
-      {/* ── Chat list ── */}
-      <FlashList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListHeaderComponent={
-          <>
-            {/* Pinned system chats */}
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, backgroundColor: colors.surface }]}>
-              Pinned
-            </Text>
+      {/* ── Loading or chat list ── */}
+      {loading ? (
+        <View style={styles.loaderWrap}>
+          <BrandedLoader />
+        </View>
+      ) : (
+        <FlashList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          ListHeaderComponent={
+            <>
+              {/* Pinned section */}
+              <SectionHeader label="Pinned" surface={colors.surface} />
 
-            {/* Vault */}
-            <Pressable
-              style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-              onPress={() => router.push('/vault')}
-            >
-              <View style={[styles.systemAvatar, { backgroundColor: '#0B9E8E' }]}>
-                <Ionicons name="shield-checkmark" size={22} color="#FFFFFF" />
-              </View>
-              <View style={styles.systemMid}>
-                <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Vault</Text>
-                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>Your private notes</Text>
-              </View>
-              <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
-            </Pressable>
-
-            {/* Xen */}
-            <Pressable
-              style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-              onPress={() => router.push('/xen')}
-            >
-              <Image source={xenAvatar} style={styles.systemAvatar} contentFit="cover" />
-              <View style={styles.systemMid}>
-                <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Xen</Text>
-                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>AI Assistant · Xensiq</Text>
-              </View>
-            </Pressable>
-
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, backgroundColor: colors.surface }]}>
-              All chats
-            </Text>
-
-            {archivedCount > 0 && (
+              {/* Vault row */}
               <Pressable
-                style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                onPress={() => router.push('/archived')}
+                style={[styles.systemRow, { backgroundColor: '#FFFBF0', borderBottomColor: colors.border, borderRightWidth: 3, borderRightColor: '#F2A93B' }]}
+                onPress={() => router.push('/vault')}
               >
-                <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
-                  <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
+                <View style={[styles.systemAvatar, { backgroundColor: '#0B9E8E' }]}>
+                  <Ionicons name="shield-checkmark" size={22} color="#FFFFFF" />
                 </View>
-                <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
-                <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
-                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                <View style={styles.systemMid}>
+                  <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Vault</Text>
+                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>Your private notes</Text>
+                </View>
+                <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
               </Pressable>
-            )}
-          </>
-        }
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="chatbubbles-outline" size={48} color={colors.border} />
-            <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: spacing.md }]}>
-              {query ? 'No results found' : 'No chats yet'}
-            </Text>
-          </View>
-        }
-        ItemSeparatorComponent={() => (
-          <View style={[styles.separator, { backgroundColor: colors.border }]} />
-        )}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-      />
+
+              {/* Xen row */}
+              <Pressable
+                style={[styles.systemRow, { backgroundColor: '#F5F7FF', borderBottomColor: colors.border, borderRightWidth: 3, borderRightColor: '#3D5AFE' }]}
+                onPress={() => router.push('/xen')}
+              >
+                <View style={{ position: 'relative' }}>
+                  <Image source={xenAvatar} style={styles.systemAvatar} contentFit="cover" />
+                  <PulsingDot color="#F2A93B" size={6} absolute />
+                </View>
+                <View style={styles.systemMid}>
+                  <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Xen</Text>
+                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>AI Assistant · Xensiq</Text>
+                </View>
+              </Pressable>
+
+              {/* All chats section */}
+              <SectionHeader label="All chats" surface={colors.surface} />
+
+              {archivedCount > 0 && (
+                <Pressable
+                  style={[styles.archivedRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                  onPress={() => router.push('/archived')}
+                >
+                  <View style={[styles.archivedIcon, { backgroundColor: colors.border }]}>
+                    <Ionicons name="archive-outline" size={18} color={colors.textSecondary} />
+                  </View>
+                  <Text style={[textStyles.body, { color: colors.textPrimary, flex: 1 }]}>Archived</Text>
+                  <Text style={[textStyles.caption, { color: colors.textSecondary }]}>{archivedCount}</Text>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                </Pressable>
+              )}
+            </>
+          }
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Ionicons name="chatbubbles-outline" size={48} color={colors.border} />
+              <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: spacing.md }]}>
+                {query ? 'No results found' : 'No chats yet'}
+              </Text>
+            </View>
+          }
+          ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} colors={[colors.primary]} />
+          }
+        />
+      )}
 
       {/* ── Overflow menu ── */}
       <Modal visible={showOverflow} transparent animationType="fade" onRequestClose={() => setShowOverflow(false)}>
         <Pressable style={overflowStyles.backdrop} onPress={() => setShowOverflow(false)} />
         <View style={[overflowStyles.menu, { backgroundColor: colors.surface }]}>
           {[
-            { label: 'New group',  action: () => { setShowOverflow(false); router.push('/new-group/select-members'); } },
+            { label: 'New group',        action: () => { setShowOverflow(false); router.push('/new-group/select-members'); } },
             { label: 'Starred messages', action: () => { setShowOverflow(false); router.push('/starred'); } },
-            { label: 'Settings',   action: () => { setShowOverflow(false); router.push('/settings'); } },
+            { label: 'Settings',         action: () => { setShowOverflow(false); router.push('/settings'); } },
           ].map((item) => (
             <TouchableOpacity key={item.label} style={[overflowStyles.item, { borderBottomColor: colors.border }]} onPress={item.action}>
               <Text style={[textStyles.body, { color: colors.textPrimary }]}>{item.label}</Text>
@@ -310,17 +422,21 @@ export default function ChatsScreen() {
       {/* ── FAB ── */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: colors.accentAmber, bottom: insets.bottom + 72 }]}
-        onPress={() => router.push('/new-chat')}
+        onPress={handleFabPress}
         activeOpacity={0.85}
       >
-        <Ionicons name="create-outline" size={26} color="#FFFFFF" />
+        <Animated.View style={{ transform: [{ rotate: fabRotate }] }}>
+          <Ionicons name="create-outline" size={26} color="#FFFFFF" />
+        </Animated.View>
       </TouchableOpacity>
     </View>
   );
 }
 
+// ── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   root: { flex: 1 },
+
   header: { width: '100%' },
   headerInner: {
     height: 56,
@@ -328,48 +444,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
   },
-  headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 22, flex: 1, paddingLeft: 8 },
-  headerActions: { flexDirection: 'row', alignItems: 'center' },
-  searchInput: {
+  headerTitleRow: {
     flex: 1,
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    paddingHorizontal: 8,
-  },
-  cancelBtn: { paddingHorizontal: 12 },
-  unreadPill: {
-    borderRadius: 10,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    marginRight: 4,
-  },
-  unreadPillText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  chipBar: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  chips: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingLeft: 8,
     gap: 8,
   },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  sectionLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    letterSpacing: 0.4,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
+  headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 26, color: '#FFFFFF' },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 16, paddingHorizontal: 8 },
+  cancelBtn: { paddingHorizontal: 12 },
+  unreadPill: { borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginRight: 4 },
+  unreadPillText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF' },
+
+  chipBar: { borderBottomWidth: StyleSheet.hairlineWidth },
+  chips: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
+  chip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
+  chipActive:   { backgroundColor: '#14213D' },
+  chipInactive: { backgroundColor: '#F0F2FF' },
+  chipText: { fontSize: 14 },
+  chipTextActive:   { fontFamily: 'Inter_600SemiBold', color: '#FFFFFF' },
+  chipTextInactive: { fontFamily: 'Inter_500Medium',   color: '#14213D' },
+
+  loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
   systemRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -378,14 +477,9 @@ const styles = StyleSheet.create({
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  systemAvatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  systemAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   systemMid: { flex: 1 },
+
   archivedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -394,15 +488,11 @@ const styles = StyleSheet.create({
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  archivedIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  archivedIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 72 },
   empty: { alignItems: 'center', marginTop: 80 },
+
   fab: {
     position: 'absolute',
     right: 20,
@@ -411,12 +501,23 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowColor: '#F2A93B',
     shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
+});
+
+const sectionStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, gap: 10 },
+  label: { fontFamily: 'Sora_700Bold', fontSize: 13, color: '#3D5AFE', letterSpacing: 0.3 },
+  line: { flex: 1, height: 1, backgroundColor: '#3D5AFE', opacity: 0.2 },
+});
+
+const loaderStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
 });
 
 const overflowStyles = StyleSheet.create({

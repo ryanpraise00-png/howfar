@@ -26,7 +26,9 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -43,7 +45,7 @@ export default function SettingsScreen() {
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.profileAvatar} contentFit="cover" />
           ) : (
-            <Avatar name={displayName || 'You'} size="lg" />
+            <Avatar name={displayName || 'You'} size="xl" />
           )}
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, { color: colors.textPrimary }]}>
@@ -55,6 +57,7 @@ export default function SettingsScreen() {
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
         </TouchableOpacity>
+        <View style={styles.profileDivider} />
 
         {/* Settings list */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -95,9 +98,10 @@ const styles = StyleSheet.create({
     gap: 14, marginBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  profileAvatar: { width: 56, height: 56, borderRadius: 28 },
+  profileAvatar: { width: 72, height: 72, borderRadius: 36 },
   profileInfo: { flex: 1 },
   profileName: { fontFamily: 'Sora_700Bold', fontSize: 17, marginBottom: 2 },
 
   card: { marginHorizontal: 0 },
+  profileDivider: { borderBottomWidth: 1, borderBottomColor: '#3D5AFE22' },
 });

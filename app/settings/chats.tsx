@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { SettingsRow } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
 
 type ThemeOption = 'Light' | 'Dark' | 'System';
 type FontSizeOption = 'Small' | 'Medium' | 'Large';
@@ -21,7 +22,9 @@ export default function ChatsSettingsScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -29,7 +32,7 @@ export default function ChatsSettingsScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>DISPLAY</Text>
+        <SectionDivider label="DISPLAY" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             icon="color-palette-outline"
@@ -56,7 +59,7 @@ export default function ChatsSettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>BACKUP</Text>
+        <SectionDivider label="BACKUP" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             icon="cloud-upload-outline"

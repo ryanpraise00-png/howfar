@@ -111,7 +111,7 @@ export default function SelectMembersScreen() {
         </View>
         {selected.length > 0 && (
           <TouchableOpacity
-            style={[styles.nextBtn, { backgroundColor: colors.accentAmber }]}
+            style={[styles.nextBtn, { backgroundColor: '#3D5AFE' }]}
             onPress={handleNext}
             disabled={adding}
           >
@@ -134,14 +134,14 @@ export default function SelectMembersScreen() {
             {selected.map((c) => (
               <TouchableOpacity
                 key={c.id}
-                style={[styles.chip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+                style={[styles.chip, { backgroundColor: '#14213D', borderColor: '#14213D' }]}
                 onPress={() => toggle(c)}
               >
                 <Avatar name={c.name} size="sm" />
-                <Text style={[styles.chipName, { color: colors.primary }]} numberOfLines={1}>
+                <Text style={[styles.chipName, { color: '#FFFFFF' }]} numberOfLines={1}>
                   {c.name.split(' ')[0]}
                 </Text>
-                <Ionicons name="close-circle" size={16} color={colors.primary} />
+                <Ionicons name="close-circle" size={16} color="#F2A93B" />
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -197,8 +197,8 @@ export default function SelectMembersScreen() {
               <View style={[
                 styles.checkbox,
                 {
-                  borderColor: sel ? colors.primary : colors.border,
-                  backgroundColor: sel ? colors.primary : 'transparent',
+                  borderColor: sel ? '#3D5AFE' : colors.border,
+                  backgroundColor: sel ? '#3D5AFE' : 'transparent',
                 },
               ]}>
                 {sel && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}

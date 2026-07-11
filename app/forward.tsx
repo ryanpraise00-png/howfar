@@ -70,23 +70,13 @@ export default function ForwardScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <View style={styles.header}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Forward to</Text>
-        {selected.size > 0 && (
-          <TouchableOpacity
-            style={[styles.sendBtn, { backgroundColor: colors.accentAmber }]}
-            onPress={handleForward}
-            disabled={sending}
-          >
-            {sending
-              ? <ActivityIndicator size="small" color="#FFFFFF" />
-              : <Ionicons name="send" size={18} color="#FFFFFF" />
-            }
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Search */}
@@ -126,8 +116,8 @@ export default function ForwardScreen() {
               </Text>
               <View style={[
                 styles.checkbox,
-                { borderColor: isSelected ? colors.accent : colors.border },
-                isSelected && { backgroundColor: colors.accent },
+                { borderColor: isSelected ? '#3D5AFE' : colors.border },
+                isSelected && { backgroundColor: '#3D5AFE' },
               ]}>
                 {isSelected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
               </View>
@@ -135,18 +125,35 @@ export default function ForwardScreen() {
           );
         }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
       />
+
+      {selected.size > 0 && (
+        <View style={[styles.forwardBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+          <TouchableOpacity
+            style={[styles.forwardBtn, { backgroundColor: '#3D5AFE' }]}
+            onPress={handleForward}
+            disabled={sending}
+          >
+            {sending
+              ? <ActivityIndicator size="small" color="#FFFFFF" />
+              : <Text style={styles.forwardBtnText}>Forward ({selected.size})</Text>
+            }
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 8, gap: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 8, gap: 4, overflow: 'hidden' },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 18, flex: 1 },
-  sendBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  forwardBar: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  forwardBtn: { borderRadius: 14, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
+  forwardBtnText: { fontFamily: 'Sora_700Bold', fontSize: 16, color: '#FFFFFF' },
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 10, gap: 8,

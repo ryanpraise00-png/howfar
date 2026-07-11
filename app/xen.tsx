@@ -22,12 +22,13 @@ import { useTheme } from '@/src/theme';
 import { api } from '@/src/services/api';
 import { showSuccess, showError } from '@/src/lib/toast';
 import ChatBackground from '@/src/components/ChatBackground';
+import AnimatedDots from '@/src/components/AnimatedDots';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const xenAvatar = require('@/assets/images/xen-avatar.png');
 
 const XEN_PURPLE = '#6B3FA0';
-const XEN_HEADER = '#4A1F7C';
+const XEN_HEADER = '#14213D';
 const STARRED_KEY = '@xen_starred';
 
 type Role = 'user' | 'assistant';
@@ -40,9 +41,10 @@ interface XenMessage {
 }
 
 const PROMPT_CHIPS = [
-  'What can you help me with?',
-  'Tell me something interesting',
-  'Help me write a message',
+  'Summarise something',
+  'Write a message',
+  'Explain a concept',
+  'Help me decide',
 ];
 
 function makeId() {
@@ -259,8 +261,8 @@ export default function XenScreen() {
         <View style={[
           bubbleStyles.bubble,
           isUser
-            ? { backgroundColor: isSelected ? colors.accentAmber : colors.bubbleSent, borderBottomRightRadius: 4 }
-            : { backgroundColor: isSelected ? colors.accentAmber + '55' : colors.bubbleIncoming, borderBottomLeftRadius: 4 },
+            ? { backgroundColor: isSelected ? colors.accentAmber : '#14213D', borderBottomRightRadius: 4 }
+            : { backgroundColor: isSelected ? colors.accentAmber + '55' : colors.bubbleIncoming, borderBottomLeftRadius: 4, borderLeftWidth: 3, borderLeftColor: '#3D5AFE' },
         ]}>
           <Text style={[bubbleStyles.text, { color: isUser ? '#FFFFFF' : colors.textPrimary }]}>
             {item.text}
@@ -282,7 +284,9 @@ export default function XenScreen() {
       {selectedId ? (
         <SelectionBar />
       ) : (
-        <View style={[styles.header, { backgroundColor: XEN_HEADER, paddingTop: insets.top }]}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' as any }]} />
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -309,12 +313,21 @@ export default function XenScreen() {
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <Image source={xenAvatar} style={styles.emptyIcon} contentFit="cover" />
-              <Text style={[textStyles.subtitle, { color: colors.textPrimary, marginTop: spacing.md }]}>
-                Hi, I'm Xen
-              </Text>
-              <Text style={[textStyles.caption, { color: colors.textSecondary, marginTop: 4 }]}>
+              <Text style={styles.emptyTitle}>Hi, I'm Xen 👋</Text>
+              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
                 Your AI assistant, powered by Xensiq
               </Text>
+              <View style={styles.chipGrid}>
+                {PROMPT_CHIPS.map((chip) => (
+                  <TouchableOpacity
+                    key={chip}
+                    style={styles.promptChip}
+                    onPress={() => sendMessage(chip)}
+                  >
+                    <Text style={styles.promptChipText}>{chip}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           }
           ListFooterComponent={
@@ -322,27 +335,12 @@ export default function XenScreen() {
               <View style={[bubbleStyles.wrapper, bubbleStyles.in]}>
                 <Image source={xenAvatar} style={bubbleStyles.botAvatar} contentFit="cover" />
                 <View style={[bubbleStyles.bubble, { backgroundColor: colors.bubbleIncoming, borderBottomLeftRadius: 4 }]}>
-                  <TypingDots color={colors.textSecondary} />
+                  <AnimatedDots color1="#3D5AFE" color2="#3D5AFE" color3="#3D5AFE" dotSize={8} />
                 </View>
               </View>
             ) : null
           }
         />
-
-        {/* Prompt chips (first open only) */}
-        {isFirstOpen && !isThinking && (
-          <View style={[styles.chipRow, { borderTopColor: colors.border }]}>
-            {PROMPT_CHIPS.map((chip) => (
-              <TouchableOpacity
-                key={chip}
-                style={[styles.promptChip, { borderColor: XEN_PURPLE, backgroundColor: XEN_PURPLE + '15' }]}
-                onPress={() => sendMessage(chip)}
-              >
-                <Text style={[styles.promptChipText, { color: XEN_PURPLE }]}>{chip}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
         {/* Reply preview */}
         {replyTo && (
@@ -406,15 +404,13 @@ const styles = StyleSheet.create({
   headerSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)' },
   listContent: { paddingHorizontal: 8, paddingVertical: 8 },
   listCentered: { flexGrow: 1, justifyContent: 'center' },
-  emptyWrap: { alignItems: 'center', paddingBottom: 24 },
+  emptyWrap: { alignItems: 'center', paddingBottom: 24, paddingHorizontal: 20 },
   emptyIcon: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
-  chipRow: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 8,
-    paddingHorizontal: 12, paddingVertical: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  promptChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  promptChipText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
+  emptyTitle: { fontFamily: 'Sora_700Bold', fontSize: 22, color: '#14213D', marginTop: 16 },
+  emptySub: { fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 6, textAlign: 'center' },
+  chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 20, justifyContent: 'center' },
+  promptChip: { borderWidth: 1, borderColor: '#3D5AFE', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  promptChipText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#14213D' },
   replyPreview: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 8,

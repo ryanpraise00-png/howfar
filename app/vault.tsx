@@ -170,12 +170,14 @@ export default function VaultScreen() {
       {selectedId ? (
         <SelectionBar />
       ) : (
-        <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' as any }]} />
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <View style={[styles.avatarIcon, { backgroundColor: '#0B9E8E' }]}>
-            <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
+          <View style={[styles.avatarIcon, { backgroundColor: '#14213D' }]}>
+            <Ionicons name="shield-checkmark" size={20} color="#F2A93B" />
           </View>
           <View style={styles.headerMid}>
             <Text style={styles.headerName}>Vault</Text>
@@ -198,9 +200,10 @@ export default function VaultScreen() {
           onScrollBeginDrag={() => { if (selectedId) setSelectedId(null); }}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="shield-checkmark-outline" size={48} color={colors.border} />
-              <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: spacing.md, textAlign: 'center' }]}>
-                Your private notes live here.{'\n'}Only you can see them.
+              <Ionicons name="lock-closed" size={64} color="#14213D" />
+              <Text style={styles.emptyTitle}>Your private space</Text>
+              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
+                Save notes, links and messages here — only you can see them
               </Text>
             </View>
           }
@@ -262,6 +265,8 @@ const styles = StyleSheet.create({
   headerBtn: { width: 40, height: 50, alignItems: 'center', justifyContent: 'center' },
   listContent: { paddingHorizontal: 12, paddingTop: 8 },
   empty: { alignItems: 'center', marginTop: 80, paddingHorizontal: 32 },
+  emptyTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#14213D', marginTop: 16 },
+  emptySub: { fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 8, textAlign: 'center' },
   replyPreview: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 8,

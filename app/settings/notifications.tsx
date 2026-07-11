@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { SettingsRow } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
 
 const TONES = ['Default', 'Chord', 'Ping', 'Synth', 'None'] as const;
 type Tone = typeof TONES[number];
@@ -24,7 +25,7 @@ function ToggleRow({ label, value, onToggle, colors }: ToggleRowProps) {
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: colors.border, true: colors.primary }}
+        trackColor={{ false: colors.border, true: '#3D5AFE' }}
         thumbColor="#FFFFFF"
       />
     </View>
@@ -69,7 +70,9 @@ export default function NotificationsScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -78,7 +81,7 @@ export default function NotificationsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
         {/* Messages */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>MESSAGES</Text>
+        <SectionDivider label="MESSAGES" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             label="Notification tone"
@@ -94,7 +97,7 @@ export default function NotificationsScreen() {
         </View>
 
         {/* Groups */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>GROUPS</Text>
+        <SectionDivider label="GROUPS" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             label="Notification tone"
@@ -110,7 +113,7 @@ export default function NotificationsScreen() {
         </View>
 
         {/* Calls */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>CALLS</Text>
+        <SectionDivider label="CALLS" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             label="Ringtone"

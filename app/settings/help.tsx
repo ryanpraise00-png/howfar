@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/src/theme';
 import { ScreenHeader } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -42,12 +43,12 @@ export default function HelpScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScreenHeader title="Help & Support" variant="teal" colors={colors} />
+      <ScreenHeader title="Help & Support" variant="navy" colors={colors} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 12 }}
       >
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>FREQUENTLY ASKED QUESTIONS</Text>
+        <SectionDivider label="FREQUENTLY ASKED QUESTIONS" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {FAQS.map((faq, i) => {
             const isOpen = openIndex === i;
@@ -72,7 +73,7 @@ export default function HelpScreen() {
           })}
         </View>
 
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>CONTACT & LEGAL</Text>
+        <SectionDivider label="CONTACT & LEGAL" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity
             style={[styles.linkRow, { borderTopWidth: 0 }]}

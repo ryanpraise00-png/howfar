@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { Avatar } from '@/src/components';
 import { api } from '@/src/services/api';
+import SectionDivider from '@/src/components/SectionDivider';
 
 interface StarredMessage {
   id: string;
@@ -56,7 +57,9 @@ export default function StarredScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' as any }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -80,10 +83,7 @@ export default function StarredScreen() {
           stickySectionHeadersEnabled
           contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
           renderSectionHeader={({ section }) => (
-            <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-              <Avatar name={section.title} size="sm" />
-              <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{section.title.toUpperCase()}</Text>
-            </View>
+            <SectionDivider label={section.title.toUpperCase()} color="#3D5AFE" bgColor={colors.surface} />
           )}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -98,7 +98,7 @@ export default function StarredScreen() {
                   {formatTime(item.createdAt)}
                 </Text>
               </View>
-              <Ionicons name="star" size={16} color={colors.accentAmber} />
+              <Ionicons name="star" size={16} color="#F2A93B" />
             </TouchableOpacity>
           )}
         />

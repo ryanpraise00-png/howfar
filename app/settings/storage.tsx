@@ -11,6 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/src/theme';
 import { ScreenHeader } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showSuccess } from '@/src/lib/toast';
@@ -102,12 +103,12 @@ export default function StorageScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScreenHeader title="Storage" variant="teal" colors={colors} />
+      <ScreenHeader title="Storage" variant="navy" colors={colors} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingTop: 12 }}
       >
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>STORAGE USAGE</Text>
+        <SectionDivider label="STORAGE USAGE" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.storageRow}>
             <View style={[styles.storageIcon, { backgroundColor: colors.primary + '15' }]}>
@@ -144,7 +145,7 @@ export default function StorageScreen() {
           <Text style={[textStyles.body, { color: colors.error }]}>Clear cache</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>NETWORK USAGE</Text>
+        <SectionDivider label="NETWORK USAGE" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {TOGGLE_ROWS.map((row, i) => (
             <View
@@ -158,7 +159,7 @@ export default function StorageScreen() {
               <Switch
                 value={prefs[row.key]}
                 onValueChange={(v) => savePrefs({ ...prefs, [row.key]: v })}
-                trackColor={{ false: colors.border, true: colors.primary }}
+                trackColor={{ false: colors.border, true: '#3D5AFE' }}
                 thumbColor="#FFFFFF"
               />
             </View>

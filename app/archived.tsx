@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, RefreshControl } from 'react-native';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { View, StyleSheet, RefreshControl, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme';
 import { ScreenHeader, EmptyState, ChatRowSkeleton } from '@/src/components';
@@ -8,6 +8,32 @@ import { FlashList } from '@shopify/flash-list';
 import { fetchChats, apiChatToItem, unarchiveChat, deleteChat } from '@/src/services/chats';
 import type { ChatItem } from '@/src/data/mockChats';
 import { showError } from '@/src/lib/toast';
+
+function AnimatedRow({ item, index, colors, onPress, onArchive, onDelete }: {
+  item: ChatItem; index: number; colors: any;
+  onPress: () => void; onArchive: (id: string) => void; onDelete: (id: string) => void;
+}) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(18)).current;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 280, delay: index * 50, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 280, delay: index * 50, useNativeDriver: true }),
+    ]).start();
+  }, []);
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      <SwipeableChatRow
+        chat={item}
+        colors={colors}
+        onPress={onPress}
+        onArchive={onArchive}
+        archiveLabel="Unarchive"
+        onDelete={onDelete}
+      />
+    </Animated.View>
+  );
+}
 
 export default function ArchivedScreen() {
   const { colors } = useTheme();
@@ -46,7 +72,7 @@ export default function ArchivedScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Archived" variant="teal" colors={colors} />
+      <ScreenHeader title="Archived" variant="navy" colors={colors} />
 
       {loading ? (
         <View style={{ paddingTop: 8 }}>
@@ -63,13 +89,13 @@ export default function ArchivedScreen() {
         <FlashList
           data={chats}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SwipeableChatRow
-              chat={item}
+          renderItem={({ item, index }) => (
+            <AnimatedRow
+              item={item}
+              index={index}
               colors={colors}
               onPress={() => router.push(`/chat/${item.id}`)}
               onArchive={handleUnarchive}
-              archiveLabel="Unarchive"
               onDelete={handleDelete}
             />
           )}

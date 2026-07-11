@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { SettingsRow } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
 
 type VisibilityOption = 'Everyone' | 'My Contacts' | 'Nobody';
 type DisappearOption = 'Off' | '24 hours' | '7 days' | '90 days';
@@ -50,7 +51,9 @@ export default function PrivacyScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -59,7 +62,7 @@ export default function PrivacyScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
         {/* Visibility settings */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>WHO CAN SEE MY INFO</Text>
+        <SectionDivider label="WHO CAN SEE MY INFO" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           {settings.map((s) => (
             <SettingsRow
@@ -73,7 +76,7 @@ export default function PrivacyScreen() {
         </View>
 
         {/* Disappearing messages */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>DEFAULT TIMER</Text>
+        <SectionDivider label="DEFAULT TIMER" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             label="Disappearing messages"
@@ -85,7 +88,7 @@ export default function PrivacyScreen() {
         </View>
 
         {/* Other */}
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 20 }]}>OTHER</Text>
+        <SectionDivider label="OTHER" bgColor={colors.surface} />
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <SettingsRow
             label="Blocked contacts"

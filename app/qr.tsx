@@ -38,7 +38,9 @@ export default function QrScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' as any }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -50,10 +52,10 @@ export default function QrScreen() {
         {(['mycode', 'scan'] as Tab[]).map((tab) => (
           <TouchableOpacity
             key={tab}
-            style={[styles.tab, activeTab === tab && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            style={[styles.tab, activeTab === tab && { borderBottomColor: '#3D5AFE', borderBottomWidth: 2 }]}
             onPress={() => setActiveTab(tab)}
           >
-            <Text style={[styles.tabText, { color: activeTab === tab ? colors.primary : colors.textSecondary }]}>
+            <Text style={[styles.tabText, { color: activeTab === tab ? '#3D5AFE' : colors.textSecondary }]}>
               {tab === 'mycode' ? 'My Code' : 'Scan Code'}
             </Text>
           </TouchableOpacity>
@@ -69,14 +71,14 @@ export default function QrScreen() {
               {countryCode} {phone}
             </Text>
           )}
-          <View style={[styles.qrBox, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.qrBox, { backgroundColor: '#FFFFFF', borderColor: '#14213D', borderWidth: 2 }]}>
             <QRCode value={qrValue} size={200} color="#14213D" backgroundColor="#FFFFFF" />
           </View>
           <Text style={[textStyles.caption, { color: colors.textSecondary, marginTop: 16, textAlign: 'center', paddingHorizontal: 40 }]}>
             Let others scan this to find you on HowFar
           </Text>
           <TouchableOpacity
-            style={[styles.shareBtn, { backgroundColor: colors.primary }]}
+            style={[styles.shareBtn, { backgroundColor: '#3D5AFE' }]}
             onPress={() => Share.share({ message: `Add me on HowFar! Scan my QR or search for ${qrValue}` })}
           >
             <Ionicons name="share-outline" size={20} color="#FFFFFF" />
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
 
   myCodeWrap: { flex: 1, alignItems: 'center', paddingTop: 36 },
   userName: { fontFamily: 'Sora_700Bold', fontSize: 20, marginTop: 12, marginBottom: 4 },
-  qrBox: { padding: 20, borderRadius: 16, borderWidth: 1 },
+  qrBox: { padding: 20, borderRadius: 16 },
   shareBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 24, marginTop: 20 },
   shareBtnText: { fontFamily: 'Sora_700Bold', fontSize: 15, color: '#FFFFFF' },
 

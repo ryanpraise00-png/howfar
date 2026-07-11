@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import SectionDivider from '@/src/components/SectionDivider';
 import { router, useLocalSearchParams } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,7 +43,9 @@ export default function MessageInfoScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <View style={styles.header}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -67,10 +70,7 @@ export default function MessageInfoScreen() {
           ListHeaderComponent={() => (
             <>
               {read.length > 0 && (
-                <View style={[styles.sectionHeader, { backgroundColor: colors.surface }]}>
-                  <Ionicons name="checkmark-done" size={16} color={colors.accent} />
-                  <Text style={[textStyles.caption, { color: colors.accent }]}>Read</Text>
-                </View>
+                <SectionDivider label="Read by" color="#3D5AFE" bgColor={colors.surface} />
               )}
             </>
           )}
@@ -79,10 +79,7 @@ export default function MessageInfoScreen() {
             return (
               <>
                 {isFirstDelivered && delivered.length > 0 && (
-                  <View style={[styles.sectionHeader, { backgroundColor: colors.surface }]}>
-                    <Ionicons name="checkmark-done" size={16} color={colors.textSecondary} />
-                    <Text style={[textStyles.caption, { color: colors.textSecondary }]}>Delivered</Text>
-                  </View>
+                  <SectionDivider label="Delivered to" color="#14213D" bgColor={colors.surface} />
                 )}
                 <View style={[styles.row, { borderBottomColor: colors.border }]}>
                   <Avatar name={item.name} size="md" />
@@ -106,7 +103,7 @@ export default function MessageInfoScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 8, gap: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 8, gap: 4, overflow: 'hidden' },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 18, flex: 1 },
   sectionHeader: {

@@ -15,7 +15,9 @@ export default function DevicesScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' as any }]} />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -31,16 +33,16 @@ export default function DevicesScreen() {
         }
         renderItem={({ item }) => (
           <View style={[styles.deviceRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-            <View style={[styles.deviceIcon, { backgroundColor: colors.primary + '15' }]}>
-              <Ionicons name="phone-portrait-outline" size={24} color={colors.primary} />
+            <View style={[styles.deviceIcon, { backgroundColor: '#3D5AFE18' }]}>
+              <Ionicons name="phone-portrait-outline" size={24} color="#3D5AFE" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>{item.name}</Text>
               <Text style={[textStyles.caption, { color: item.isCurrent ? colors.accentTeal : colors.textSecondary }]}>{item.detail}</Text>
             </View>
             {item.isCurrent && (
-              <View style={[styles.currentBadge, { backgroundColor: colors.accentTeal + '18', borderColor: colors.accentTeal + '40' }]}>
-                <Text style={[styles.currentText, { color: colors.accentTeal }]}>Current</Text>
+              <View style={[styles.currentBadge, { backgroundColor: '#3D5AFE' }]}>
+                <Text style={[styles.currentText, { color: '#FFFFFF' }]}>Current</Text>
               </View>
             )}
           </View>
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
   sectionLabel: { fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.6, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 8 },
   deviceRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   deviceIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  currentBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12, borderWidth: 1 },
+  currentBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
   currentText: { fontFamily: 'Inter_500Medium', fontSize: 12 },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, margin: 16, marginTop: 24, paddingVertical: 16, borderRadius: 14, borderWidth: 1 },
 });

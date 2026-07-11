@@ -103,7 +103,7 @@ export default function GroupDetailsScreen() {
           <TouchableOpacity onPress={handlePickPhoto} activeOpacity={0.8}>
             {photoUri ? (
               <>
-                <Image source={{ uri: photoUri }} style={styles.photo} contentFit="cover" />
+                <Image source={{ uri: photoUri }} style={[styles.photo, { borderColor: '#14213D', borderWidth: 2 }]} contentFit="cover" />
                 {uploadingPhoto && (
                   <View style={[StyleSheet.absoluteFillObject, styles.photoSpinner]}>
                     <ActivityIndicator color="#FFFFFF" />
@@ -111,12 +111,12 @@ export default function GroupDetailsScreen() {
                 )}
               </>
             ) : (
-              <View style={[styles.photoPlaceholder, { backgroundColor: colors.border }]}>
+              <View style={[styles.photoPlaceholder, { backgroundColor: colors.border, borderColor: '#14213D', borderWidth: 2 }]}>
                 <Ionicons name="people" size={48} color={colors.textSecondary} />
               </View>
             )}
             <View style={[styles.cameraOverlay, { backgroundColor: colors.primary }]}>
-              <Ionicons name="camera" size={18} color="#FFFFFF" />
+              <Ionicons name="camera" size={18} color="#3D5AFE" />
             </View>
           </TouchableOpacity>
         </View>
@@ -184,7 +184,7 @@ export default function GroupDetailsScreen() {
         <TouchableOpacity
           style={[
             styles.createBtn,
-            { backgroundColor: canCreate ? colors.accentAmber : colors.border },
+            { backgroundColor: canCreate ? '#3D5AFE' : colors.border },
           ]}
           onPress={handleCreate}
           disabled={!canCreate}

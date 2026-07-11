@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SectionList, RefreshControl,
+  SectionList, RefreshControl, Animated,
 } from 'react-native';
 import { showComingSoon } from '@/src/lib/toast';
 import { router } from 'expo-router';
@@ -19,6 +19,9 @@ import {
   type ApiStatusPost,
 } from '@/src/services/status';
 import { relativeTime, type ContactStatus } from '@/src/data/mockStatuses';
+import AnimatedDots from '@/src/components/AnimatedDots';
+import SectionDivider from '@/src/components/SectionDivider';
+import { getAvatarColor } from '@/src/utils/avatarColor';
 
 // ─── status ring ─────────────────────────────────────────────────────────────
 
@@ -67,6 +70,19 @@ function MyStatusRow({
   const hasPosted = myStatus.length > 0;
   const name = displayName || 'My status';
 
+  // Amber pulse animation
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.3, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
   const handlePress = () => {
     if (hasPosted) {
       router.push('/status/me/viewer');
@@ -84,7 +100,9 @@ function MyStatusRow({
       activeOpacity={0.7}
     >
       <View style={styles.avatarWrap}>
-        <StatusRing size={48} hasStatus={hasPosted} dashed color={colors.accentAmber} />
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <StatusRing size={48} hasStatus={hasPosted} dashed color={colors.accentAmber} />
+        </Animated.View>
         <View style={styles.avatarInner}>
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.avatar48} contentFit="cover" />
@@ -125,52 +143,67 @@ function ContactStatusRow({
   colors,
   textStyles,
   onPress,
+  index,
 }: {
   item: ContactStatus & { avatarUri?: string };
   colors: any;
   textStyles: any;
   onPress: () => void;
+  index: number;
 }) {
   const latest = item.items[item.items.length - 1];
   const initial = item.name[0].toUpperCase();
+  const ringColor = getAvatarColor(item.name);
+
+  const animOpacity = useRef(new Animated.Value(0)).current;
+  const animTranslate = useRef(new Animated.Value(10)).current;
+  useEffect(() => {
+    const delay = Math.min(index, 12) * 60;
+    Animated.parallel([
+      Animated.timing(animOpacity, { toValue: 1, duration: 300, delay, useNativeDriver: true }),
+      Animated.timing(animTranslate, { toValue: 0, duration: 300, delay, useNativeDriver: true }),
+    ]).start();
+  }, []);
 
   return (
-    <TouchableOpacity
-      style={[styles.statusRow, { borderBottomColor: colors.border }]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.avatarWrap}>
-        <StatusRing size={48} hasStatus viewed={item.viewed} color={colors.accentAmber} />
-        <View style={styles.avatarInner}>
-          {(item as any).avatarUri ? (
-            <Image source={{ uri: (item as any).avatarUri }} style={styles.avatar48} contentFit="cover" />
-          ) : (
-            <View style={[styles.avatarFallback48, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.avatarInitial, { color: '#FFFFFF' }]}>{initial}</Text>
-            </View>
-          )}
+    <Animated.View style={{ opacity: animOpacity, transform: [{ translateY: animTranslate }] }}>
+      <TouchableOpacity
+        style={[styles.statusRow, { borderBottomColor: colors.border }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.avatarWrap}>
+          <StatusRing size={48} hasStatus viewed={item.viewed} color={item.viewed ? '#9CA3AF' : ringColor} />
+          <View style={styles.avatarInner}>
+            {(item as any).avatarUri ? (
+              <Image source={{ uri: (item as any).avatarUri }} style={styles.avatar48} contentFit="cover" />
+            ) : (
+              <View style={[styles.avatarFallback48, { backgroundColor: ringColor }]}>
+                <Text style={[styles.avatarInitial, { color: '#FFFFFF' }]}>{initial}</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.rowInfo}>
-        <Text style={[styles.rowName, { color: colors.textPrimary }]}>{item.name}</Text>
-        <Text style={[textStyles.caption, { color: colors.textSecondary }]}>
-          {latest ? relativeTime(latest.postedAt) : ''}
-        </Text>
-      </View>
-
-      {latest?.kind === 'image' && latest.imageUri && (
-        <Image source={{ uri: latest.imageUri }} style={styles.thumbPreview} contentFit="cover" />
-      )}
-      {latest?.kind === 'text' && (
-        <View style={[styles.textThumb, { backgroundColor: latest.bgColor ?? colors.primary }]}>
-          <Text style={[styles.textThumbLabel, { color: latest.textColor ?? '#FFF' }]} numberOfLines={2}>
-            {latest.text}
+        <View style={styles.rowInfo}>
+          <Text style={[styles.rowName, { color: colors.textPrimary }]}>{item.name}</Text>
+          <Text style={[textStyles.caption, { color: colors.textSecondary }]}>
+            {latest ? relativeTime(latest.postedAt) : ''}
           </Text>
         </View>
-      )}
-    </TouchableOpacity>
+
+        {latest?.kind === 'image' && latest.imageUri && (
+          <Image source={{ uri: latest.imageUri }} style={styles.thumbPreview} contentFit="cover" />
+        )}
+        {latest?.kind === 'text' && (
+          <View style={[styles.textThumb, { backgroundColor: latest.bgColor ?? colors.primary }]}>
+            <Text style={[styles.textThumbLabel, { color: latest.textColor ?? '#FFF' }]} numberOfLines={2}>
+              {latest.text}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -199,7 +232,6 @@ export default function UpdatesScreen() {
     setRefreshing(false);
   };
 
-  // Convert api feed to ContactStatus shape (used by ContactStatusRow)
   const contactList = apiFeedToContactStatuses(feed) as (ContactStatus & { avatarUri?: string })[];
 
   const unviewed = contactList.filter((s) => !s.viewed);
@@ -214,9 +246,20 @@ export default function UpdatesScreen() {
     router.push(`/status/${cs.contactId}/viewer`);
   }, []);
 
+  // Track per-section offset for stagger index
+  const sectionOffsets: Record<string, number> = {};
+  let runningIndex = 0;
+  sections.forEach((s) => {
+    sectionOffsets[s.title] = runningIndex;
+    runningIndex += s.data.length;
+  });
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      {/* ── Header with navy gradient ── */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <View style={styles.headerInner}>
           <Text style={styles.headerTitle}>Moments</Text>
           <View style={styles.headerRight}>
@@ -242,18 +285,20 @@ export default function UpdatesScreen() {
           <MyStatusRow myStatus={myStatus} colors={colors} textStyles={textStyles} />
         }
         renderSectionHeader={({ section: { title } }) => (
-          <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>{title.toUpperCase()}</Text>
-          </View>
+          <SectionDivider label={title.toUpperCase()} color="#3D5AFE" />
         )}
-        renderItem={({ item }) => (
-          <ContactStatusRow
-            item={item}
-            colors={colors}
-            textStyles={textStyles}
-            onPress={() => handleContactPress(item)}
-          />
-        )}
+        renderItem={({ item, index, section }) => {
+          const offset = sectionOffsets[section.title] ?? 0;
+          return (
+            <ContactStatusRow
+              item={item}
+              colors={colors}
+              textStyles={textStyles}
+              onPress={() => handleContactPress(item)}
+              index={offset + index}
+            />
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <Ionicons name="ellipse-outline" size={52} color={colors.border} />
@@ -274,16 +319,13 @@ export default function UpdatesScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 
-  header: { width: '100%' },
+  header: { width: '100%', overflow: 'hidden' },
   headerInner: {
     height: 56, flexDirection: 'row',
     alignItems: 'center', paddingHorizontal: 16,
   },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#FFFFFF', flex: 1 },
   headerRight: { flexDirection: 'row', gap: 4 },
-
-  sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
-  sectionLabel: { fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.6 },
 
   statusRow: {
     flexDirection: 'row', alignItems: 'center',

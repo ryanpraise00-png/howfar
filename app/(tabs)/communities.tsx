@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { IconButton } from '@/src/components';
+import SectionDivider from '@/src/components/SectionDivider';
+import { getAvatarColor } from '@/src/utils/avatarColor';
 
 interface Circle {
   id: string;
@@ -71,15 +73,16 @@ function CircleRow({ circle, colors }: { circle: Circle; colors: any }) {
 }
 
 function DiscoverCard({ circle, onJoin, colors }: { circle: DiscoverCircle; onJoin: (id: string) => void; colors: any }) {
+  const stripColor = getAvatarColor(circle.name);
   return (
     <View style={[styles.discoverCard, { backgroundColor: colors.surface }]}>
-      <View style={[styles.discoverCover, { backgroundColor: circle.color }]}>
+      <View style={[styles.discoverCover, { backgroundColor: stripColor }]}>
         <Text style={styles.discoverCoverText}>{circle.name[0]}</Text>
       </View>
       <Text style={[styles.discoverName, { color: colors.textPrimary }]} numberOfLines={1}>{circle.name}</Text>
       <Text style={[styles.discoverMeta, { color: colors.textSecondary }]}>{circle.memberCount} members</Text>
       <TouchableOpacity
-        style={[styles.joinBtn, { backgroundColor: circle.joined ? colors.border : '#3D5AFE' }]}
+        style={[styles.joinBtn, circle.joined ? { backgroundColor: colors.border } : styles.joinBtnActive]}
         onPress={() => onJoin(circle.id)}
         disabled={!!circle.joined}
       >
@@ -94,10 +97,11 @@ function DiscoverCard({ circle, onJoin, colors }: { circle: DiscoverCircle; onJo
 function EmptyCircles({ colors, onDiscover }: { colors: any; onDiscover: () => void }) {
   return (
     <View style={styles.emptyContainer}>
-      <View style={styles.svgContainer}>
-        <View style={[styles.svgCircle, { backgroundColor: '#14213D', left: 0, top: 10 }]} />
-        <View style={[styles.svgCircle, { backgroundColor: '#3D5AFE', left: 28, top: 10 }]} />
-        <View style={[styles.svgCircle, { backgroundColor: '#8A9FF7', left: 14, top: -8 }]} />
+      {/* Three overlapping circles illustration */}
+      <View style={styles.illustrationWrap}>
+        <View style={[styles.illustrationCircle, { backgroundColor: '#14213D', left: 0, top: 16 }]} />
+        <View style={[styles.illustrationCircle, { backgroundColor: '#F2A93B', left: 36, top: 16 }]} />
+        <View style={[styles.illustrationCircle, { backgroundColor: '#3D5AFE', left: 18, top: 0 }]} />
       </View>
       <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No circles yet</Text>
       <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
@@ -131,11 +135,16 @@ export default function CommunitiesScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Circles</Text>
-        <View style={styles.headerRight}>
-          <IconButton name="search-outline" color="#FFFFFF" onPress={() => {}} />
-          <IconButton name="ellipsis-vertical-outline" color="#FFFFFF" onPress={() => {}} />
+      {/* ── Header with navy gradient ── */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
+        <View style={styles.headerInner}>
+          <Text style={styles.headerTitle}>Circles</Text>
+          <View style={styles.headerRight}>
+            <IconButton name="search-outline" color="#FFFFFF" onPress={() => {}} />
+            <IconButton name="ellipsis-vertical-outline" color="#FFFFFF" onPress={() => {}} />
+          </View>
         </View>
       </View>
 
@@ -144,7 +153,7 @@ export default function CommunitiesScreen() {
           <EmptyCircles colors={colors} onDiscover={scrollToDiscover} />
         ) : (
           <>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>YOUR CIRCLES</Text>
+            <SectionDivider label="YOUR CIRCLES" color="#3D5AFE" />
             <View style={{ backgroundColor: colors.surface }}>
               {myCircles.map((c) => <CircleRow key={c.id} circle={c} colors={colors} />)}
             </View>
@@ -155,7 +164,7 @@ export default function CommunitiesScreen() {
           </>
         )}
 
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 24 }]}>DISCOVER</Text>
+        <SectionDivider label="DISCOVER" color="#3D5AFE" />
         <FlatList
           data={discover}
           horizontal
@@ -172,10 +181,10 @@ export default function CommunitiesScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 10 },
+  header: { overflow: 'hidden' },
+  headerInner: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 10, height: 56 },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#FFFFFF', flex: 1 },
   headerRight: { flexDirection: 'row', gap: 4 },
-  sectionLabel: { fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.6, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
   circleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, gap: 12 },
   circleAvatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   circleAvatarText: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#FFFFFF' },
@@ -191,11 +200,13 @@ const styles = StyleSheet.create({
   discoverCoverText: { fontFamily: 'Sora_700Bold', fontSize: 32, color: '#FFFFFF' },
   discoverName: { fontFamily: 'Inter_600SemiBold', fontSize: 14, marginHorizontal: 10, marginTop: 8 },
   discoverMeta: { fontFamily: 'Inter_400Regular', fontSize: 12, marginHorizontal: 10, marginBottom: 8 },
-  joinBtn: { marginHorizontal: 10, borderRadius: 6, paddingVertical: 6, alignItems: 'center' },
+  joinBtn: { marginHorizontal: 10, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16, alignItems: 'center' },
+  joinBtnActive: { backgroundColor: '#3D5AFE' },
   joinBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 13 },
+  // Empty state
   emptyContainer: { alignItems: 'center', paddingHorizontal: 40, paddingTop: 60 },
-  svgContainer: { width: 80, height: 64, marginBottom: 24, position: 'relative' },
-  svgCircle: { position: 'absolute', width: 48, height: 48, borderRadius: 24, opacity: 0.85 },
+  illustrationWrap: { width: 90, height: 72, marginBottom: 24, position: 'relative' },
+  illustrationCircle: { position: 'absolute', width: 52, height: 52, borderRadius: 26, opacity: 0.15 },
   emptyTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, marginBottom: 8 },
   emptySub: { fontFamily: 'Inter_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 28 },
   emptyBtn: { width: '100%', paddingVertical: 14, borderRadius: 10, alignItems: 'center', marginBottom: 12 },

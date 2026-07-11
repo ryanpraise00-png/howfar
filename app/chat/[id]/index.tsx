@@ -477,7 +477,7 @@ export default function ChatScreen() {
     const bg = isSearchMatch ? colors.accentAmber : (isOut ? colors.bubbleSent : colors.bubbleIncoming);
     const txtColor = isOut ? '#FFFFFF' : colors.textPrimary;
     const metaColor = isOut ? 'rgba(255,255,255,0.7)' : colors.textSecondary;
-    const tickColor = msg.status === 'read' ? colors.accentTeal : metaColor;
+    const tickColor = msg.status === 'read' ? '#3D5AFE' : metaColor;
     const nameColor = msg.senderId ? senderColor(msg.senderId) : colors.accentTeal;
 
     const bubble = (
@@ -563,7 +563,7 @@ export default function ChatScreen() {
           ) : null}
 
           <View style={[bubbleStyles.meta, isOut ? { justifyContent: 'flex-end' } : { justifyContent: 'flex-start' }]}>
-            <Text style={[bubbleStyles.time, { color: metaColor }]}>{msg.timestamp}</Text>
+            <Text style={[bubbleStyles.time, { color: isOut ? metaColor : '#8892B0' }]}>{msg.timestamp}</Text>
             {isOut && !uploadingIds.has(msg.id) && (
               <Ionicons
                 name={msg.status === 'sent' ? 'checkmark' : 'checkmark-done'}
@@ -809,7 +809,7 @@ export default function ChatScreen() {
             activeOpacity={isGroup ? 0.7 : 1}
           >
             <Text style={styles.headerName} numberOfLines={1}>{chatName}</Text>
-            <Text style={styles.headerSub} numberOfLines={1}>
+            <Text style={[styles.headerSub, !isGroup && !isTyping && presenceLabel === 'online' && { color: '#4ADE80' }]} numberOfLines={1}>
               {isGroup ? groupSubtitle : (isTyping ? 'typing…' : presenceLabel)}
             </Text>
           </TouchableOpacity>
@@ -912,7 +912,7 @@ export default function ChatScreen() {
         paddingBottom: insets.bottom + 4,
       }]}>
         <TouchableOpacity style={styles.inputIcon}>
-          <Ionicons name="happy-outline" size={24} color={colors.textSecondary} />
+          <Ionicons name="happy-outline" size={24} color="#3D5AFE" />
         </TouchableOpacity>
 
         <View style={[styles.inputPill, { backgroundColor: colors.background, borderColor: colors.border }]}>
@@ -929,13 +929,13 @@ export default function ChatScreen() {
           />
           {!hasText && (
             <TouchableOpacity onPress={() => showComingSoon('Camera')} accessibilityLabel="Open camera">
-              <Ionicons name="camera-outline" size={22} color={colors.textSecondary} />
+              <Ionicons name="camera-outline" size={22} color="#3D5AFE" />
             </TouchableOpacity>
           )}
         </View>
 
         <TouchableOpacity style={styles.inputIcon} onPress={() => setShowAttachment(true)}>
-          <Ionicons name="attach" size={24} color={colors.textSecondary} />
+          <Ionicons name="attach" size={24} color="#3D5AFE" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -1067,6 +1067,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-end',
     paddingHorizontal: 8, paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth, gap: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 3,
   },
   inputIcon: { width: 36, height: 40, alignItems: 'center', justifyContent: 'center' },
   inputPill: {

@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Pressable, RefreshControl,
+  StyleSheet, Pressable, RefreshControl, Animated,
 } from 'react-native';
 import { showComingSoon } from '@/src/lib/toast';
 import { FlashList } from '@shopify/flash-list';
@@ -11,45 +11,77 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 import { Avatar, ChatRowSkeleton } from '@/src/components';
 import { fetchCalls, type ApiCallRecord } from '@/src/services/calls';
+import AnimatedDots from '@/src/components/AnimatedDots';
 
 // ─── call row ────────────────────────────────────────────────────────────────
 
-function CallRow({ item, colors, textStyles }: { item: ApiCallRecord; colors: any; textStyles: any }) {
-  const isMissed = item.direction === 'missed';
-  const dirIcon = isMissed ? 'call-outline' : item.direction === 'incoming' ? 'arrow-down-outline' : 'arrow-up-outline';
-  const dirColor = isMissed ? colors.error : colors.textSecondary;
-  const nameColor = isMissed ? colors.error : colors.textPrimary;
+function CallRow({
+  item,
+  colors,
+  textStyles,
+  index,
+}: {
+  item: ApiCallRecord;
+  colors: any;
+  textStyles: any;
+  index: number;
+}) {
+  const isMissed   = item.direction === 'missed';
+  const isIncoming = item.direction === 'incoming';
+  const isOutgoing = item.direction === 'outgoing';
+
+  const dirIcon  = isMissed ? 'arrow-down-outline' : isIncoming ? 'arrow-down-outline' : 'arrow-up-outline';
+  const dirColor = isMissed ? '#DC2626' : isIncoming ? '#3D5AFE' : '#14213D';
+  const nameColor = isMissed ? '#DC2626' : colors.textPrimary;
+
+  const borderStyle = isMissed
+    ? { borderLeftWidth: 3, borderLeftColor: '#DC2626' }
+    : isIncoming
+    ? { borderLeftWidth: 3, borderLeftColor: '#3D5AFE' }
+    : { borderLeftWidth: 3, borderLeftColor: '#14213D' };
+
+  const animOpacity   = useRef(new Animated.Value(0)).current;
+  const animTranslate = useRef(new Animated.Value(10)).current;
+  useEffect(() => {
+    const delay = Math.min(index, 12) * 60;
+    Animated.parallel([
+      Animated.timing(animOpacity,   { toValue: 1, duration: 300, delay, useNativeDriver: true }),
+      Animated.timing(animTranslate, { toValue: 0, duration: 300, delay, useNativeDriver: true }),
+    ]).start();
+  }, []);
 
   return (
-    <Pressable
-      style={[styles.callRow, { borderBottomColor: colors.border }]}
-      onPress={() => router.push(`/call/${item.id}/info`)}
-      android_ripple={{ color: colors.border }}
-    >
-      <Avatar name={item.name} size="md" />
-      <View style={styles.callInfo}>
-        <Text style={[styles.callName, { color: nameColor }]} numberOfLines={1}>{item.name}</Text>
-        <View style={styles.callMeta}>
-          <Ionicons name={dirIcon} size={14} color={dirColor} />
-          <Text style={[textStyles.caption, { color: dirColor }]}>
-            {item.direction.charAt(0).toUpperCase() + item.direction.slice(1)}
-            {item.duration ? ` · ${item.duration}` : ''}
-          </Text>
-        </View>
-      </View>
-      <Text style={[styles.callTime, { color: colors.textSecondary }]}>{item.timestamp}</Text>
-      <TouchableOpacity
-        style={[styles.callTypeBtn, { borderColor: colors.border }]}
-        onPress={() => router.push(`/call/${item.kind}/${item.contactId}`)}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    <Animated.View style={{ opacity: animOpacity, transform: [{ translateY: animTranslate }] }}>
+      <Pressable
+        style={[styles.callRow, { borderBottomColor: colors.border }, borderStyle]}
+        onPress={() => router.push(`/call/${item.id}/info`)}
+        android_ripple={{ color: colors.border }}
       >
-        <Ionicons
-          name={item.kind === 'video' ? 'videocam-outline' : 'call-outline'}
-          size={20}
-          color={colors.primary}
-        />
-      </TouchableOpacity>
-    </Pressable>
+        <Avatar name={item.name} size="md" />
+        <View style={styles.callInfo}>
+          <Text style={[styles.callName, { color: nameColor }]} numberOfLines={1}>{item.name}</Text>
+          <View style={styles.callMeta}>
+            <Ionicons name={dirIcon} size={14} color={dirColor} />
+            <Text style={[textStyles.caption, { color: dirColor }]}>
+              {item.direction.charAt(0).toUpperCase() + item.direction.slice(1)}
+              {item.duration ? ` · ${item.duration}` : ''}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.callTime, { color: colors.textSecondary }]}>{item.timestamp}</Text>
+        <TouchableOpacity
+          style={[styles.callTypeBtn, { borderColor: colors.border }]}
+          onPress={() => router.push(`/call/${item.kind}/${item.contactId}`)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name={item.kind === 'video' ? 'videocam-outline' : 'call-outline'}
+            size={20}
+            color={colors.primary}
+          />
+        </TouchableOpacity>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -91,8 +123,10 @@ export default function CallsScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {/* ── Header ── */}
-      <View style={[styles.header, { backgroundColor: colors.primary, paddingTop: insets.top }]}>
+      {/* ── Header with navy gradient ── */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <View style={styles.headerInner}>
           <Text style={styles.headerTitle}>Calls</Text>
           <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/new-chat')}>
@@ -119,15 +153,15 @@ export default function CallsScreen() {
 
       {/* ── Call list ── */}
       {loading ? (
-        <View style={{ paddingTop: 8 }}>
-          {[0, 1, 2, 3, 4].map((i) => <ChatRowSkeleton key={i} colors={colors} />)}
+        <View style={{ alignItems: 'center', paddingTop: 32 }}>
+          <AnimatedDots />
         </View>
       ) : (
         <FlashList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <CallRow item={item} colors={colors} textStyles={textStyles} />
+          renderItem={({ item, index }) => (
+            <CallRow item={item} colors={colors} textStyles={textStyles} index={index} />
           )}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -168,7 +202,7 @@ export default function CallsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { paddingBottom: 10 },
+  header: { paddingBottom: 10, overflow: 'hidden' },
   headerInner: { height: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#FFFFFF', flex: 1 },
   headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

@@ -8,7 +8,9 @@ import {
   SectionList,
   Pressable,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
+import SectionDivider from '@/src/components/SectionDivider';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -113,7 +115,9 @@ export default function NewChatScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <View style={styles.header}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14213D' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -154,7 +158,7 @@ export default function NewChatScreen() {
                     else if (a.id === 'contact') router.push('/new-contact');
                     else if (a.id === 'community') showComingSoon('Communities');
                   }}>
-                    <View style={[styles.quickIcon, { backgroundColor: colors.primary }]}>
+                    <View style={[styles.quickIcon, { backgroundColor: '#3D5AFE' }]}>
                       <Ionicons name={a.icon} size={20} color="#FFFFFF" />
                     </View>
                     <Text style={[textStyles.body, { color: colors.textPrimary }]}>{a.label}</Text>
@@ -165,28 +169,42 @@ export default function NewChatScreen() {
             ) : null
           }
           renderSectionHeader={({ section: { title } }) => (
-            <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-              <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>{title}</Text>
-            </View>
+            <SectionDivider label={title} color="#3D5AFE" bgColor={colors.background} />
           )}
-          renderItem={({ item }) => (
-            <Pressable
-              style={[styles.contactRow, { borderBottomColor: colors.border }]}
-              onPress={() => handleContactTap(item)}
-              android_ripple={{ color: colors.border }}
-            >
-              <Avatar name={item.name} size="md" onlineIndicator={isOnline(item)} />
-              <View style={styles.contactInfo}>
-                <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Sora_600SemiBold' }]}>
-                  {item.name}
-                </Text>
-                <Text style={[textStyles.caption, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {statusText(item)}
-                </Text>
-              </View>
-              {opening === item.id && <ActivityIndicator size="small" color={colors.primary} />}
-            </Pressable>
-          )}
+          renderItem={({ item, index }) => {
+            const anim = useRef(new Animated.Value(0)).current;
+            useEffect(() => {
+              Animated.timing(anim, {
+                toValue: 1,
+                duration: 300,
+                delay: Math.min(index, 15) * 40,
+                useNativeDriver: true,
+              }).start();
+            }, []);
+            return (
+              <Animated.View style={{
+                opacity: anim,
+                transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+              }}>
+                <Pressable
+                  style={[styles.contactRow, { borderBottomColor: colors.border }]}
+                  onPress={() => handleContactTap(item)}
+                  android_ripple={{ color: colors.border }}
+                >
+                  <Avatar name={item.name} size="md" onlineIndicator={isOnline(item)} />
+                  <View style={styles.contactInfo}>
+                    <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Sora_600SemiBold' }]}>
+                      {item.name}
+                    </Text>
+                    <Text style={[textStyles.caption, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {statusText(item)}
+                    </Text>
+                  </View>
+                  {opening === item.id && <ActivityIndicator size="small" color={colors.primary} />}
+                </Pressable>
+              </Animated.View>
+            );
+          }}
           showsVerticalScrollIndicator={false}
         />
 
@@ -239,16 +257,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   divider: { height: StyleSheet.hairlineWidth, marginTop: 8, marginBottom: 4 },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-  },
-  sectionLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -13,7 +13,7 @@ export default function AccountScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScreenHeader title="Account" variant="teal" colors={colors} />
+      <ScreenHeader title="Account" variant="navy" colors={colors} />
       <SettingsRow label="Phone number" value={`${countryCode} ${phone}`} showChevron={false} colors={colors} onPress={() => showComingSoon('Change number')} />
       <SettingsRow label="Change number" icon="phone-portrait-outline" iconBg="#5856D6" colors={colors} onPress={() => showComingSoon('Change number')} />
       <SettingsRow label="QR Code" icon="qr-code-outline" iconBg="#14213D" colors={colors} onPress={() => router.push('/qr')} />

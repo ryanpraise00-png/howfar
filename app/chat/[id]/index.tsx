@@ -522,10 +522,10 @@ export default function ChatScreen() {
 
           {msg.kind === 'voice' && (
             <View style={bubbleStyles.voiceRow}>
-              <TouchableOpacity style={[bubbleStyles.playBtn, { backgroundColor: isOut ? 'rgba(255,255,255,0.25)' : colors.primary + '22' }]}>
-                <Ionicons name="play" size={16} color={isOut ? '#FFFFFF' : colors.primary} />
+              <TouchableOpacity style={[bubbleStyles.playBtn, { backgroundColor: isOut ? 'rgba(255,255,255,0.25)' : '#3D5AFE' }]}>
+                <Ionicons name="play" size={16} color="#FFFFFF" />
               </TouchableOpacity>
-              <VoiceWaveform color={isOut ? 'rgba(255,255,255,0.7)' : colors.primary + 'AA'} />
+              <VoiceWaveform color={isOut ? 'rgba(255,255,255,0.7)' : '#14213D'} />
               <Text style={[bubbleStyles.voiceDur, { color: metaColor }]}>{msg.voiceDuration}</Text>
             </View>
           )}
@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
   groupAvatar: { width: 36, height: 36, borderRadius: 18 },
   headerMid: { flex: 1, paddingHorizontal: 8, justifyContent: 'center' },
   headerName: { fontFamily: 'Sora_700Bold', fontSize: 16, color: '#FFFFFF' },
-  headerSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  headerSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#B9C2DA' },
   headerBtn: { width: 40, height: 50, alignItems: 'center', justifyContent: 'center' },
 
   listContent: { paddingHorizontal: 4, paddingTop: 4 },

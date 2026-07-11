@@ -7,6 +7,7 @@ import { useTheme } from '@/src/theme';
 import { SettingsRow } from '@/src/components';
 import { useAuthStore } from '@/src/store/authStore';
 import { Avatar } from '@/src/components';
+import { getAvatarColor } from '@/src/utils/avatarColor';
 
 const SETTINGS_ROWS = [
   { icon: 'key-outline' as const,          iconBg: '#5856D6', label: 'Account',          route: '/settings/account' },
@@ -35,29 +36,30 @@ export default function SettingsScreen() {
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
-        {/* Profile row */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
+        {/* Profile block — navy background */}
         <TouchableOpacity
-          style={[styles.profileRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+          style={styles.profileBlock}
           onPress={() => router.push('/settings/profile-edit')}
-          activeOpacity={0.7}
+          activeOpacity={0.85}
         >
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#14213D' }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.05)', bottom: '50%' }]} />
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.profileAvatar} contentFit="cover" />
           ) : (
             <Avatar name={displayName || 'You'} size="xl" />
           )}
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.textPrimary }]}>
+            <Text style={styles.profileName}>
               {displayName || 'Your Name'}
             </Text>
-            <Text style={[textStyles.body, { color: colors.textSecondary }]} numberOfLines={1}>
+            <Text style={styles.profileBio} numberOfLines={1}>
               {about || "Hey! I'm on HowFar"}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          <Ionicons name="chevron-forward" size={18} color="#B9C2DA" />
         </TouchableOpacity>
-        <View style={styles.profileDivider} />
 
         {/* Settings list */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -92,16 +94,15 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 48, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 18, color: '#FFFFFF', flex: 1 },
 
-  profileRow: {
+  profileBlock: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 14,
-    gap: 14, marginBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 20, paddingVertical: 24,
+    gap: 16, overflow: 'hidden',
   },
   profileAvatar: { width: 72, height: 72, borderRadius: 36 },
   profileInfo: { flex: 1 },
-  profileName: { fontFamily: 'Sora_700Bold', fontSize: 17, marginBottom: 2 },
+  profileName: { fontFamily: 'Sora_700Bold', fontSize: 17, color: '#FFFFFF', marginBottom: 3 },
+  profileBio: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#B9C2DA' },
 
   card: { marginHorizontal: 0 },
-  profileDivider: { borderBottomWidth: 1, borderBottomColor: '#3D5AFE22' },
 });

@@ -76,9 +76,7 @@ function DiscoverCard({ circle, onJoin, colors }: { circle: DiscoverCircle; onJo
   const stripColor = getAvatarColor(circle.name);
   return (
     <View style={[styles.discoverCard, { backgroundColor: colors.surface }]}>
-      <View style={[styles.discoverCover, { backgroundColor: stripColor }]}>
-        <Text style={styles.discoverCoverText}>{circle.name[0]}</Text>
-      </View>
+      <View style={[styles.discoverCover, { backgroundColor: stripColor }]} />
       <Text style={[styles.discoverName, { color: colors.textPrimary }]} numberOfLines={1}>{circle.name}</Text>
       <Text style={[styles.discoverMeta, { color: colors.textSecondary }]}>{circle.memberCount} members</Text>
       <TouchableOpacity
@@ -153,7 +151,7 @@ export default function CommunitiesScreen() {
           <EmptyCircles colors={colors} onDiscover={scrollToDiscover} />
         ) : (
           <>
-            <SectionDivider label="YOUR CIRCLES" color="#3D5AFE" />
+            <SectionDivider label="Your circles" color="#3D5AFE" />
             <View style={{ backgroundColor: colors.surface }}>
               {myCircles.map((c) => <CircleRow key={c.id} circle={c} colors={colors} />)}
             </View>
@@ -164,7 +162,7 @@ export default function CommunitiesScreen() {
           </>
         )}
 
-        <SectionDivider label="DISCOVER" color="#3D5AFE" />
+        <SectionDivider label="Discover" color="#3D5AFE" />
         <FlatList
           data={discover}
           horizontal
@@ -195,10 +193,9 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#FFFFFF' },
   createBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, margin: 16, padding: 12, borderRadius: 8, borderWidth: 1.5, justifyContent: 'center' },
   createBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14 },
-  discoverCard: { width: 150, borderRadius: 12, overflow: 'hidden', paddingBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
-  discoverCover: { height: 80, alignItems: 'center', justifyContent: 'center' },
-  discoverCoverText: { fontFamily: 'Sora_700Bold', fontSize: 32, color: '#FFFFFF' },
-  discoverName: { fontFamily: 'Inter_600SemiBold', fontSize: 14, marginHorizontal: 10, marginTop: 8 },
+  discoverCard: { width: 160, borderRadius: 12, overflow: 'hidden', paddingBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
+  discoverCover: { height: 70 },
+  discoverName: { fontFamily: 'Sora_700Bold', fontSize: 16, marginHorizontal: 10, marginTop: 10 },
   discoverMeta: { fontFamily: 'Inter_400Regular', fontSize: 12, marginHorizontal: 10, marginBottom: 8 },
   joinBtn: { marginHorizontal: 10, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16, alignItems: 'center' },
   joinBtnActive: { backgroundColor: '#3D5AFE' },

@@ -262,7 +262,10 @@ export default function ChatsScreen() {
           </View>
         </View>
 
-        {/* ── Inline search bar ── */}
+      </View>
+
+      {/* ── Search bar (below navy header) ── */}
+      <View style={[styles.searchBarOuter, { backgroundColor: colors.surface }]}>
         <View style={styles.searchBarWrap}>
           <Ionicons name="search" size={18} color="#3D5AFE" style={{ marginRight: 8 }} />
           <TextInput
@@ -392,13 +395,16 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 26, color: '#FFFFFF' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
+  searchBarOuter: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   searchBarWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F2FF',
     borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },

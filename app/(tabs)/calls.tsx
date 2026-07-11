@@ -133,19 +133,23 @@ export default function CallsScreen() {
             <Ionicons name="person-add-outline" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
-        <View style={[styles.searchBar, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-          <Ionicons name="search" size={16} color="rgba(255,255,255,0.7)" />
+      </View>
+
+      {/* ── Search bar (below navy header) ── */}
+      <View style={[styles.searchOuter, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchBar, { backgroundColor: '#F0F2FF' }]}>
+          <Ionicons name="search" size={16} color="#3D5AFE" />
           <TextInput
             ref={searchRef}
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: '#14213D' }]}
             placeholder="Search calls"
-            placeholderTextColor="rgba(255,255,255,0.55)"
+            placeholderTextColor="#9AA0B9"
             value={query}
             onChangeText={setQuery}
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
-              <Ionicons name="close-circle" size={16} color="rgba(255,255,255,0.7)" />
+              <Ionicons name="close-circle" size={16} color="#9AA0B9" />
             </TouchableOpacity>
           )}
         </View>
@@ -153,7 +157,7 @@ export default function CallsScreen() {
 
       {/* ── Call list ── */}
       {loading ? (
-        <View style={{ alignItems: 'center', paddingTop: 32 }}>
+        <View style={styles.dotsWrap}>
           <AnimatedDots />
         </View>
       ) : (
@@ -165,9 +169,12 @@ export default function CallsScreen() {
           )}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="call-outline" size={52} color={colors.border} />
-              <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: 12 }]}>
-                {query ? 'No results' : 'No recent calls'}
+              <Ionicons name="call-outline" size={52} color="#3D5AFE" />
+              <Text style={[styles.emptyTitle, { color: '#14213D' }]}>
+                {query ? 'No results' : 'No calls yet'}
+              </Text>
+              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
+                {query ? '' : 'Your call history will appear here'}
               </Text>
             </View>
           }
@@ -202,16 +209,17 @@ export default function CallsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { paddingBottom: 10, overflow: 'hidden' },
-  headerInner: { height: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  header: { overflow: 'hidden' },
+  headerInner: { height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 20, color: '#FFFFFF', flex: 1 },
   headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  searchOuter: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 12, marginBottom: 4,
-    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, gap: 8,
+    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, gap: 8,
   },
-  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#FFFFFF', paddingVertical: 0 },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14, paddingVertical: 0 },
+  dotsWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 48 },
   callRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 10,
@@ -225,7 +233,9 @@ const styles = StyleSheet.create({
     width: 38, height: 38, borderRadius: 19,
     borderWidth: 1, alignItems: 'center', justifyContent: 'center',
   },
-  empty: { alignItems: 'center', marginTop: 80 },
+  empty: { alignItems: 'center', marginTop: 80, paddingHorizontal: 40 },
+  emptyTitle: { fontFamily: 'Sora_700Bold', fontSize: 18, marginTop: 12, marginBottom: 6 },
+  emptySub: { fontFamily: 'Inter_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
   fab: {
     position: 'absolute', right: 20,
     width: 56, height: 56, borderRadius: 28,

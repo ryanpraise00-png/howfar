@@ -107,10 +107,8 @@ function MyStatusRow({
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.avatar48} contentFit="cover" />
           ) : (
-            <View style={[styles.avatarFallback48, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.avatarInitial, { color: '#FFFFFF' }]}>
-                {(displayName || 'Y')[0].toUpperCase()}
-              </Text>
+            <View style={[styles.avatarFallback48, { backgroundColor: getAvatarColor(displayName || 'You') }]}>
+              <Ionicons name="person" size={24} color="#FFFFFF" />
             </View>
           )}
         </View>
@@ -214,6 +212,7 @@ export default function UpdatesScreen() {
   const insets = useSafeAreaInsets();
   const { myStatus, feed, setFeed } = useStatusStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadFeed = useCallback(async () => {
     try {
@@ -221,6 +220,8 @@ export default function UpdatesScreen() {
       setFeed(data.myStatus, data.contacts);
     } catch {
       // fall back to whatever is in the store / empty
+    } finally {
+      setLoading(false);
     }
   }, [setFeed]);
 
@@ -300,12 +301,30 @@ export default function UpdatesScreen() {
           );
         }}
         ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <Ionicons name="ellipse-outline" size={52} color={colors.border} />
-            <Text style={[textStyles.body, { color: colors.textSecondary, marginTop: 12 }]}>
-              No moments yet
-            </Text>
-          </View>
+          loading ? (
+            <View style={styles.emptyWrap}>
+              <AnimatedDots />
+            </View>
+          ) : (
+            <View style={styles.emptyWrap}>
+              {/* Story rings illustration */}
+              <View style={styles.storyRings}>
+                <View style={[styles.storyRing, { borderColor: '#14213D', left: 0, top: 12 }]} />
+                <View style={[styles.storyRing, { borderColor: '#F2A93B', left: 34, top: 12 }]} />
+                <View style={[styles.storyRing, { borderColor: '#3D5AFE', left: 17, top: 0 }]} />
+              </View>
+              <Text style={[styles.emptyTitle, { color: '#14213D' }]}>No moments yet</Text>
+              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
+                When your contacts post moments, they'll appear here
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyBtn}
+                onPress={() => router.push('/status/composer')}
+              >
+                <Text style={styles.emptyBtnText}>Add a moment</Text>
+              </TouchableOpacity>
+            </View>
+          )
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
@@ -363,5 +382,11 @@ const styles = StyleSheet.create({
   },
   textThumbLabel: { fontFamily: 'Inter_500Medium', fontSize: 9, textAlign: 'center', lineHeight: 12 },
 
-  emptyWrap: { alignItems: 'center', marginTop: 60 },
+  emptyWrap: { alignItems: 'center', marginTop: 60, paddingHorizontal: 40 },
+  storyRings: { width: 86, height: 68, marginBottom: 24, position: 'relative' },
+  storyRing: { position: 'absolute', width: 52, height: 52, borderRadius: 26, borderWidth: 3 },
+  emptyTitle: { fontFamily: 'Sora_700Bold', fontSize: 18, marginBottom: 8 },
+  emptySub: { fontFamily: 'Inter_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+  emptyBtn: { backgroundColor: '#3D5AFE', borderRadius: 20, paddingHorizontal: 24, paddingVertical: 12 },
+  emptyBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#FFFFFF' },
 });

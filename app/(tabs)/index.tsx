@@ -12,8 +12,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { showComingSoon } from '@/src/lib/toast';
+import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const xenAvatar = require('@/assets/images/xen-avatar.png');
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
@@ -240,9 +244,7 @@ export default function ChatsScreen() {
               style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
               onPress={() => router.push('/xen')}
             >
-              <View style={[styles.systemAvatar, { backgroundColor: '#6B3FA0' }]}>
-                <Ionicons name="hardware-chip-outline" size={22} color="#FFFFFF" />
-              </View>
+              <Image source={xenAvatar} style={styles.systemAvatar} contentFit="cover" />
               <View style={styles.systemMid}>
                 <Text style={[textStyles.body, { color: colors.textPrimary, fontFamily: 'Inter_500Medium' }]}>Xen</Text>
                 <Text style={[textStyles.caption, { color: colors.textSecondary }]}>AI Assistant · Xensiq</Text>

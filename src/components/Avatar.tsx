@@ -3,17 +3,19 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { lightColors } from '@/src/theme';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const xenAvatar = require('@/assets/images/xen-avatar.png');
+
 const SIZES = { sm: 32, md: 44, lg: 56, xl: 72 } as const;
 const ICON_SIZES = { sm: 16, md: 22, lg: 28, xl: 36 } as const;
 const DOT_SIZES = { sm: 8, md: 10, lg: 12, xl: 14 } as const;
 
 type AvatarType = 'user' | 'group' | 'xen' | 'vault';
 
-const TYPE_CONFIG: Record<AvatarType, { bg: string; icon: React.ComponentProps<typeof Ionicons>['name']; iconColor: string }> = {
-  user:  { bg: '#14213D', icon: 'person',           iconColor: '#FFFFFF' },
-  group: { bg: '#3D5AFE', icon: 'people',            iconColor: '#FFFFFF' },
-  xen:   { bg: '#0B5E5C', icon: 'flash',             iconColor: '#F2A93B' },
-  vault: { bg: '#14213D', icon: 'shield-checkmark',  iconColor: '#FFFFFF' },
+const TYPE_CONFIG: Record<Exclude<AvatarType, 'xen'>, { bg: string; icon: React.ComponentProps<typeof Ionicons>['name']; iconColor: string }> = {
+  user:  { bg: '#14213D', icon: 'person',          iconColor: '#FFFFFF' },
+  group: { bg: '#3D5AFE', icon: 'people',           iconColor: '#FFFFFF' },
+  vault: { bg: '#14213D', icon: 'shield-checkmark', iconColor: '#FFFFFF' },
 };
 
 interface AvatarProps {
@@ -38,7 +40,25 @@ export function Avatar({
   const dotSize = DOT_SIZES[size];
 
   const resolvedType: AvatarType = type ?? (isGroup ? 'group' : 'user');
-  const { bg, icon, iconColor } = TYPE_CONFIG[resolvedType];
+
+  function renderFallback() {
+    if (resolvedType === 'xen') {
+      return (
+        <Image
+          source={xenAvatar}
+          style={[styles.base, { width: dim, height: dim, borderRadius: dim / 2 }]}
+          contentFit="cover"
+          transition={0}
+        />
+      );
+    }
+    const { bg, icon, iconColor } = TYPE_CONFIG[resolvedType];
+    return (
+      <View style={[styles.base, styles.fallback, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
+        <Ionicons name={icon} size={iconSize} color={iconColor} />
+      </View>
+    );
+  }
 
   return (
     <View style={{ width: dim, height: dim }}>
@@ -49,11 +69,7 @@ export function Avatar({
           contentFit="cover"
           transition={200}
         />
-      ) : (
-        <View style={[styles.base, styles.fallback, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
-          <Ionicons name={icon} size={iconSize} color={iconColor} />
-        </View>
-      )}
+      ) : renderFallback()}
       {onlineIndicator && (
         <View
           style={[

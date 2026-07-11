@@ -17,10 +17,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import { useTheme } from '@/src/theme';
 import { api } from '@/src/services/api';
 import { showSuccess, showError } from '@/src/lib/toast';
 import ChatBackground from '@/src/components/ChatBackground';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const xenAvatar = require('@/assets/images/xen-avatar.png');
 
 const XEN_PURPLE = '#6B3FA0';
 const XEN_HEADER = '#4A1F7C';
@@ -250,9 +254,7 @@ export default function XenScreen() {
         style={[bubbleStyles.wrapper, isUser ? bubbleStyles.out : bubbleStyles.in]}
       >
         {!isUser && (
-          <View style={[bubbleStyles.botAvatar, { backgroundColor: XEN_PURPLE }]}>
-            <Ionicons name="hardware-chip-outline" size={14} color="#FFFFFF" />
-          </View>
+          <Image source={xenAvatar} style={bubbleStyles.botAvatar} contentFit="cover" />
         )}
         <View style={[
           bubbleStyles.bubble,
@@ -284,9 +286,7 @@ export default function XenScreen() {
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <View style={[styles.avatarIcon, { backgroundColor: XEN_PURPLE }]}>
-            <Ionicons name="hardware-chip-outline" size={20} color="#FFFFFF" />
-          </View>
+          <Image source={xenAvatar} style={styles.avatarIcon} contentFit="cover" />
           <View style={styles.headerMid}>
             <Text style={styles.headerName}>Xen</Text>
             <Text style={styles.headerSub}>
@@ -308,9 +308,7 @@ export default function XenScreen() {
           onScrollBeginDrag={() => { if (selectedId) setSelectedId(null); }}
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
-              <View style={[styles.emptyIcon, { backgroundColor: XEN_PURPLE + '22' }]}>
-                <Ionicons name="hardware-chip-outline" size={40} color={XEN_PURPLE} />
-              </View>
+              <Image source={xenAvatar} style={styles.emptyIcon} contentFit="cover" />
               <Text style={[textStyles.subtitle, { color: colors.textPrimary, marginTop: spacing.md }]}>
                 Hi, I'm Xen
               </Text>
@@ -322,9 +320,7 @@ export default function XenScreen() {
           ListFooterComponent={
             isThinking ? (
               <View style={[bubbleStyles.wrapper, bubbleStyles.in]}>
-                <View style={[bubbleStyles.botAvatar, { backgroundColor: XEN_PURPLE }]}>
-                  <Ionicons name="hardware-chip-outline" size={14} color="#FFFFFF" />
-                </View>
+                <Image source={xenAvatar} style={bubbleStyles.botAvatar} contentFit="cover" />
                 <View style={[bubbleStyles.bubble, { backgroundColor: colors.bubbleIncoming, borderBottomLeftRadius: 4 }]}>
                   <TypingDots color={colors.textSecondary} />
                 </View>

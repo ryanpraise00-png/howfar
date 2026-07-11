@@ -156,7 +156,6 @@ export default function ChatsScreen() {
   const [loading, setLoading]       = useState(true);
   const [showOverflow, setShowOverflow] = useState(false);
   const [filter, setFilter]         = useState<FilterKey>('All');
-  const [searching, setSearching]   = useState(false);
   const [query, setQuery]           = useState('');
   const searchRef = useRef<TextInput>(null);
 
@@ -212,9 +211,6 @@ export default function ChatsScreen() {
     return [...list].sort((a, b) => Number(b.isPinned) - Number(a.isPinned));
   }, [chats, filter, query]);
 
-  const openSearch  = () => { setSearching(true); setTimeout(() => searchRef.current?.focus(), 50); };
-  const closeSearch = () => { setSearching(false); setQuery(''); };
-
   const handleArchive = useCallback(async (id: string) => {
     setChats((prev) => prev.filter((c) => c.id !== id));
     try { await updateChatSettings(id, { isArchived: true }); } catch {}
@@ -243,8 +239,6 @@ export default function ChatsScreen() {
     setRefreshing(false);
   }, []);
 
-  const totalUnread = chats.reduce((n, c) => n + (c.unreadCount > 0 ? 1 : 0), 0);
-
   const renderItem = useCallback(({ item, index }: { item: ChatItem; index: number }) => (
     <AnimatedChatRow
       index={index}
@@ -268,39 +262,32 @@ export default function ChatsScreen() {
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255,255,255,0.06)', bottom: '50%' }]} />
 
         <View style={styles.headerInner}>
-          {searching ? (
-            <>
-              <TextInput
-                ref={searchRef}
-                style={[styles.searchInput, { color: '#FFFFFF' }]}
-                placeholder="Search…"
-                placeholderTextColor="rgba(255,255,255,0.6)"
-                value={query}
-                onChangeText={setQuery}
-                autoFocus
-                returnKeyType="search"
-              />
-              <TouchableOpacity onPress={closeSearch} style={styles.cancelBtn}>
-                <Text style={[textStyles.label, { color: '#FFFFFF' }]}>Cancel</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.headerTitleRow}>
-                <Text style={styles.headerTitle}>HowFar</Text>
-                <PulsingDot color="#4ADE80" size={8} />
-              </View>
-              <View style={styles.headerActions}>
-                {totalUnread > 0 && (
-                  <View style={[styles.unreadPill, { backgroundColor: colors.accentAmber }]}>
-                    <Text style={styles.unreadPillText}>{totalUnread}</Text>
-                  </View>
-                )}
-                <IconButton name="camera-outline" color="#FFFFFF" onPress={() => router.push('/camera')} accessibilityLabel="Open camera" />
-                <IconButton name="search-outline"  color="#FFFFFF" onPress={openSearch}                  accessibilityLabel="Search chats" />
-                <IconButton name="ellipsis-vertical" color="#FFFFFF" onPress={() => setShowOverflow(true)} accessibilityLabel="More options" />
-              </View>
-            </>
+          <View style={styles.headerTitleRow}>
+            <Text style={styles.headerTitle}>HowFar</Text>
+            <PulsingDot color="#4ADE80" size={8} />
+          </View>
+          <View style={styles.headerActions}>
+            <IconButton name="camera-outline"    color="#FFFFFF" onPress={() => router.push('/camera')}    accessibilityLabel="Open camera" />
+            <IconButton name="ellipsis-vertical" color="#FFFFFF" onPress={() => setShowOverflow(true)} accessibilityLabel="More options" />
+          </View>
+        </View>
+
+        {/* ── Inline search bar ── */}
+        <View style={styles.searchBarWrap}>
+          <Ionicons name="search" size={18} color="#3D5AFE" style={{ marginRight: 8 }} />
+          <TextInput
+            ref={searchRef}
+            style={styles.searchBarInput}
+            placeholder="Search chats..."
+            placeholderTextColor="#9AA0B9"
+            value={query}
+            onChangeText={setQuery}
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+              <Ionicons name="close-circle" size={18} color="#9AA0B9" />
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -342,7 +329,7 @@ export default function ChatsScreen() {
 
               {/* Vault row */}
               <Pressable
-                style={[styles.systemRow, { backgroundColor: '#FFFBF0', borderBottomColor: colors.border, borderRightWidth: 3, borderRightColor: '#F2A93B' }]}
+                style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
                 onPress={() => router.push('/vault')}
               >
                 <View style={[styles.systemAvatar, { backgroundColor: '#0B9E8E' }]}>
@@ -357,7 +344,7 @@ export default function ChatsScreen() {
 
               {/* Xen row */}
               <Pressable
-                style={[styles.systemRow, { backgroundColor: '#F5F7FF', borderBottomColor: colors.border, borderRightWidth: 3, borderRightColor: '#3D5AFE' }]}
+                style={[styles.systemRow, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
                 onPress={() => router.push('/xen')}
               >
                 <View style={{ position: 'relative' }}>
@@ -453,10 +440,23 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontFamily: 'Sora_700Bold', fontSize: 26, color: '#FFFFFF' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
-  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 16, paddingHorizontal: 8 },
-  cancelBtn: { paddingHorizontal: 12 },
-  unreadPill: { borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginRight: 4 },
-  unreadPillText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF' },
+  searchBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F2FF',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  searchBarInput: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#14213D',
+    padding: 0,
+  },
 
   chipBar: { borderBottomWidth: StyleSheet.hairlineWidth },
   chips: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
